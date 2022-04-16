@@ -28,4 +28,4 @@ def test_get_collection_list(database):
     database.create_collection("a")
     database.create_collection("b")
 
-    assert database.list_collection_names() == ["b", "a"]
+    assert sorted(database.list_collection_names()) == sorted(["b", "a"])
