@@ -130,7 +130,7 @@ class Database:
         with self.__client._open_session() as session:
             collection_name_iter = session.exc_command(
                 command=Command(cmd=COMMANDS.get_collection_list, **kwargs),
-                database=self.__name
+                database=self.__name,
             )
 
             collection_iter = (

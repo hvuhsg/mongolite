@@ -6,21 +6,21 @@ from .command import Command, COMMANDS
 
 class Collection:
     def __init__(
-            self,
-            database,
-            name: str,
-            create: Optional[bool] = False,
-            **kwargs: Any
+        self, database, name: str, create: Optional[bool] = False, **kwargs: Any
     ):
         if not isinstance(name, str):
             raise TypeError("name must be an instance of str")
 
         if not name or ".." in name:
             raise InvalidName("collection names cannot be empty")
-        if "$" in name and not (name.startswith("oplog.$main") or name.startswith("$cmd")):
+        if "$" in name and not (
+            name.startswith("oplog.$main") or name.startswith("$cmd")
+        ):
             raise InvalidName("collection names must not contain '$': %r" % name)
         if name[0] == "." or name[-1] == ".":
-            raise InvalidName("collection names must not start or end with '.': %r" % name)
+            raise InvalidName(
+                "collection names must not start or end with '.': %r" % name
+            )
         if "\x00" in name:
             raise InvalidName("collection names must not contain the null character")
 
@@ -127,7 +127,9 @@ class Collection:
     def update_one(self, filter: Dict, override: Dict):
         with self.__database._open_session() as session:
             return session.exc_command(
-                command=Command(cmd=COMMANDS.update, filter=filter, override=override, many=False),
+                command=Command(
+                    cmd=COMMANDS.update, filter=filter, override=override, many=False
+                ),
                 collection=self.__name,
                 database=self.__database.name,
             )
@@ -135,7 +137,9 @@ class Collection:
     def update_many(self, filter: Dict, override: Dict):
         with self.__database._open_session() as session:
             return session.exc_command(
-                command=Command(cmd=COMMANDS.update, filter=filter, override=override, many=True),
+                command=Command(
+                    cmd=COMMANDS.update, filter=filter, override=override, many=True
+                ),
                 collection=self.__name,
                 database=self.__database.name,
             )
@@ -143,7 +147,12 @@ class Collection:
     def replace_one(self, filter: Dict, replacement: Dict):
         with self.__database._open_session() as session:
             return session.exc_command(
-                command=Command(cmd=COMMANDS.replace, filter=filter, replacement=replacement, many=False),
+                command=Command(
+                    cmd=COMMANDS.replace,
+                    filter=filter,
+                    replacement=replacement,
+                    many=False,
+                ),
                 collection=self.__name,
                 database=self.__database.name,
             )
@@ -151,7 +160,12 @@ class Collection:
     def replace_many(self, filter: Dict, replacement: Dict):
         with self.__database._open_session() as session:
             return session.exc_command(
-                command=Command(cmd=COMMANDS.replace, filter=filter, replacement=replacement, many=True),
+                command=Command(
+                    cmd=COMMANDS.replace,
+                    filter=filter,
+                    replacement=replacement,
+                    many=True,
+                ),
                 collection=self.__name,
                 database=self.__database.name,
             )
@@ -160,17 +174,20 @@ class Collection:
         return self.__database.drop_collection(self.__name, comment=comment)
 
     def find(
-            self,
-            filter: Dict, fields: Optional[Dict] = None,
-            many: Optional[bool] = True,
-            **kwargs
+        self,
+        filter: Dict,
+        fields: Optional[Dict] = None,
+        many: Optional[bool] = True,
+        **kwargs
     ):
         if fields is None:
             fields = {}
 
         with self.__database._open_session() as session:
             return session.exc_command(
-                command=Command(cmd=COMMANDS.find, filter=filter, fields=fields, many=many, **kwargs),
+                command=Command(
+                    cmd=COMMANDS.find, filter=filter, fields=fields, many=many, **kwargs
+                ),
                 collection=self.__name,
                 database=self.__database.name,
             )

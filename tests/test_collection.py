@@ -8,24 +8,24 @@ from mongolite import MongoClient
 
 @pytest.fixture(scope="function")
 def collection():
-    with MongoClient('col_test', database="db") as client:
+    with MongoClient("col_test", database="db") as client:
         db = client.get_default_database()
-        col = db.create_collection('col')
+        col = db.create_collection("col")
         yield col
 
-    shutil.rmtree('col_test')
+    shutil.rmtree("col_test")
 
 
 def test_collection_drop(collection):
     collection.drop()
 
-    assert not os.path.exists('col_test/db/col')
+    assert not os.path.exists("col_test/db/col")
 
 
 def test_insert(collection):
     collection.insert_one({"a": True})
 
-    with open('col_test/db/col', 'r') as file:
+    with open("col_test/db/col", "r") as file:
         data = file.read()
 
     assert data == '{"a": true}\n'
@@ -34,14 +34,14 @@ def test_insert(collection):
 def test_insert_many(collection):
     collection.insert_many([{"a": True}, {"b": False}])
 
-    with open('col_test/db/col', 'r') as file:
+    with open("col_test/db/col", "r") as file:
         data = file.read()
 
     assert data == '{"a": true}\n{"b": false}\n'
 
 
 def test_find_one(collection):
-    collection.insert_one({'a': 1, 'b': 2})
+    collection.insert_one({"a": 1, "b": 2})
 
     doc = collection.find_one({"a": 1})
 
@@ -53,14 +53,14 @@ def test_find_one(collection):
 
 
 def test_find_many(collection):
-    collection.insert_one({'a': 1, 'b': 2})
-    collection.insert_one({'a': 1, 'b': 3})
-    collection.insert_one({'a': 1, 'b': 4})
-    collection.insert_one({'a': 5, 'b': 2})
+    collection.insert_one({"a": 1, "b": 2})
+    collection.insert_one({"a": 1, "b": 3})
+    collection.insert_one({"a": 1, "b": 4})
+    collection.insert_one({"a": 5, "b": 2})
 
     docs = collection.find({"a": 1})
 
-    assert list(docs) == [{'a': 1, 'b': 2}, {'a': 1, 'b': 3}, {'a': 1, 'b': 4}]
+    assert list(docs) == [{"a": 1, "b": 2}, {"a": 1, "b": 3}, {"a": 1, "b": 4}]
 
 
 def test_find_with_fields(collection):

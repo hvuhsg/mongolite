@@ -4,7 +4,12 @@ from pathlib import Path
 
 from ..command import Command, COMMANDS
 from ..backend.storage_engine import StorageEngine
-from ..backend.utils import document_filter_match, update_with_fields, grouper, update_document_with_override
+from ..backend.utils import (
+    document_filter_match,
+    update_with_fields,
+    grouper,
+    update_document_with_override,
+)
 from ..backend.exceptions import DatabaseIsRequired, CollectionIsRequired
 
 MAX_TIMEOUT = 20
@@ -25,16 +30,18 @@ class Session:
         if database is None:
             raise DatabaseIsRequired()
 
-    def _enforce_collection(self, database: Union[str, None], collection: Union[str, None]):
+    def _enforce_collection(
+        self, database: Union[str, None], collection: Union[str, None]
+    ):
         self._enforce_database(database)
         if collection is None:
             raise CollectionIsRequired()
 
     def exc_command(
-            self,
-            command: Command,
-            database: str = None,
-            collection: str = None,
+        self,
+        command: Command,
+        database: str = None,
+        collection: str = None,
     ) -> Any:
         if command.cmd == COMMANDS.drop_database:
             self._enforce_database(database)
@@ -58,7 +65,9 @@ class Session:
 
         if command.cmd == COMMANDS.insert:
             self._enforce_collection(database, collection)
-            return self._storage_engine.add_documents(database, collection, command.documents)
+            return self._storage_engine.add_documents(
+                database, collection, command.documents
+            )
 
         if command.cmd == COMMANDS.delete:
             self._enforce_collection(database, collection)
@@ -81,7 +90,9 @@ class Session:
     def close(self):
         self._closed = True
 
-    def _iter_read_documents(self, database: str, collection: str, buffer_size: int = 10):
+    def _iter_read_documents(
+        self, database: str, collection: str, buffer_size: int = 10
+    ):
         offset_id = self._storage_engine.create_read_offset()
         while True:
             documents = self._storage_engine.get_documents(
@@ -96,13 +107,17 @@ class Session:
 
             yield from documents
 
-    def _iter_documents_filtered(self, database: str, collection: str, filter: dict, **kwargs):
+    def _iter_documents_filtered(
+        self, database: str, collection: str, filter: dict, **kwargs
+    ):
         for document in self._iter_read_documents(database, collection, **kwargs):
             if document_filter_match(document.data, filter):
                 yield document
 
     def find(self, command: Command, database: str, collection: str):
-        for document in self._iter_documents_filtered(database, collection, command.filter):
+        for document in self._iter_documents_filtered(
+            database, collection, command.filter
+        ):
             fields = {}
             if command.fields:
                 fields = command.fields
@@ -113,20 +128,19 @@ class Session:
         group_size = 10
 
         for documents in grouper(
-                group_size,
-                self._iter_documents_filtered(
-                    database,
-                    collection,
-                    command.filter,
-                    buffer_size=group_size
-                )
+            group_size,
+            self._iter_documents_filtered(
+                database, collection, command.filter, buffer_size=group_size
+            ),
         ):
             if not command.many:
                 documents = documents[:1]
 
             documents_updated = {}
             for document in documents:
-                updated_document = update_document_with_override(document.data, command.override)
+                updated_document = update_document_with_override(
+                    document.data, command.override
+                )
                 if updated_document != document.data:
                     documents_updated[document] = updated_document
 
@@ -140,13 +154,10 @@ class Session:
         group_size = 10
 
         for documents in grouper(
-                group_size,
-                self._iter_documents_filtered(
-                    database,
-                    collection,
-                    command.filter,
-                    buffer_size=group_size
-                )
+            group_size,
+            self._iter_documents_filtered(
+                database, collection, command.filter, buffer_size=group_size
+            ),
         ):
             if not command.many:
                 documents = documents[:1]
@@ -160,13 +171,10 @@ class Session:
         group_size = 10
 
         for documents in grouper(
-                group_size,
-                self._iter_documents_filtered(
-                    database,
-                    collection,
-                    command.filter,
-                    buffer_size=group_size
-                )
+            group_size,
+            self._iter_documents_filtered(
+                database, collection, command.filter, buffer_size=group_size
+            ),
         ):
             if not command.many:
                 documents = documents[:1]

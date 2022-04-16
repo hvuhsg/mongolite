@@ -39,19 +39,20 @@ class StorageEngine:
         self._offsets[offset] = 0
         return offset
 
-    def _get_database_path(self, database_name: str, error_not_found: bool = False) -> Path:
+    def _get_database_path(
+        self, database_name: str, error_not_found: bool = False
+    ) -> Path:
         if error_not_found and not self.is_database_exists(database_name):
             raise DatabaseNotFound(database_name)
 
         return self._root_path / database_name
 
     def _get_collection_path(
-            self,
-            database_name: str,
-            collection_name: str,
-            error_not_found: bool = False
+        self, database_name: str, collection_name: str, error_not_found: bool = False
     ) -> Path:
-        if error_not_found and not self.is_collection_exists(database_name, collection_name):
+        if error_not_found and not self.is_collection_exists(
+            database_name, collection_name
+        ):
             raise CollectionNotFound(database_name, collection_name)
 
         return self._get_database_path(database_name) / collection_name
@@ -90,36 +91,40 @@ class StorageEngine:
         collection_path.touch()
 
     def drop_collection(self, database_name: str, collection_name: str):
-        collection_path = self._get_collection_path(database_name, collection_name, error_not_found=True)
+        collection_path = self._get_collection_path(
+            database_name, collection_name, error_not_found=True
+        )
         os.remove(collection_path)
 
     def collection_list(self, database_name: str):
         database_path = self._get_database_path(database_name, error_not_found=True)
         database_dir = os.scandir(database_path)
 
-        return [
-            entry.name
-            for entry in database_dir
-            if entry.is_file()
-        ]
+        return [entry.name for entry in database_dir if entry.is_file()]
 
-    def add_documents(self, database_name: str, collection_name: str, documents: List[dict]):
+    def add_documents(
+        self, database_name: str, collection_name: str, documents: List[dict]
+    ):
         with self._collection_lock(database_name, collection_name):
-            with open(self._get_collection_path(database_name, collection_name), 'a') as file:
+            with open(
+                self._get_collection_path(database_name, collection_name), "a"
+            ) as file:
                 documents_jsons = [json.dumps(document) for document in documents]
-                file.writelines('\n'.join(documents_jsons) + '\n')
+                file.writelines("\n".join(documents_jsons) + "\n")
 
     def get_documents(
-            self,
-            database_name: str,
-            collection_name: str,
-            number_of_documents: int = None,
-            offset_id: str = None,
+        self,
+        database_name: str,
+        collection_name: str,
+        number_of_documents: int = None,
+        offset_id: str = None,
     ) -> List[Document]:
         documents = []
 
         with self._collection_lock(database_name, collection_name):
-            with open(self._get_collection_path(database_name, collection_name), 'r') as collection_file:
+            with open(
+                self._get_collection_path(database_name, collection_name), "r"
+            ) as collection_file:
                 if offset_id is not None:
                     offset = self._offsets[offset_id]
                     collection_file.seek(offset)
@@ -133,12 +138,12 @@ class StorageEngine:
                     document_offset = collection_file.tell()
 
                     line = collection_file.readline()
-                    if line == '':
+                    if line == "":
                         break
 
-                    if line.startswith('0'):
+                    if line.startswith("0"):
                         continue
-                    line.strip('0')
+                    line.strip("0")
 
                     document = Document(
                         data=json.loads(line),
@@ -156,19 +161,25 @@ class StorageEngine:
 
     def _overwrite_documents(self, documents: Dict[Document, str]):
         document = next(iter(documents.keys()))
-        collection_path = self._get_collection_path(database_name=document.database, collection_name=document.collection)
+        collection_path = self._get_collection_path(
+            database_name=document.database, collection_name=document.collection
+        )
 
-        with open(collection_path, 'r+') as file:
+        with open(collection_path, "r+") as file:
             for document, overwrite in documents.items():
                 file.seek(document.file_offset)
-                file.write(('0' * (document.length-1)) + "\n")
+                file.write(("0" * (document.length - 1)) + "\n")
                 file.seek(0, io.SEEK_END)
-                file.write(overwrite+'\n')
+                file.write(overwrite + "\n")
 
     def update_documents(self, documents: Dict[Document, dict]):
-        overwrite_documents = {document: json.dumps(updated) for document, updated in documents.items()}
+        overwrite_documents = {
+            document: json.dumps(updated) for document, updated in documents.items()
+        }
         self._overwrite_documents(overwrite_documents)
 
     def delete_documents(self, documents: List[Document]):
-        overwrite_documents = {document: '0'*(document.length-1) for document in documents}
+        overwrite_documents = {
+            document: "0" * (document.length - 1) for document in documents
+        }
         self._overwrite_documents(overwrite_documents)

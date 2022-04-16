@@ -33,7 +33,9 @@ class CollectionAlreadyExists(MongoliteBackendException):
         self.col_name = collection_name
 
     def __str__(self):
-        return f"Collection '{self.col_name}' already exists in database '{self.db_name}'"
+        return (
+            f"Collection '{self.col_name}' already exists in database '{self.db_name}'"
+        )
 
 
 class CollectionIsRequired(MongoliteBackendException):
