@@ -2,10 +2,10 @@ from typing import Any, Union
 from threading import RLock
 from pathlib import Path
 
-from command import Command, COMMANDS
-from backend.storage_engine import StorageEngine
-from backend.utils import document_filter_match, update_with_fields, grouper, update_document_with_override
-from backend.exceptions import DatabaseIsRequired, CollectionIsRequired
+from ..command import Command, COMMANDS
+from ..backend.storage_engine import StorageEngine
+from ..backend.utils import document_filter_match, update_with_fields, grouper, update_document_with_override
+from ..backend.exceptions import DatabaseIsRequired, CollectionIsRequired
 
 MAX_TIMEOUT = 20
 

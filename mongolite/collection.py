@@ -1,7 +1,7 @@
 from typing import Optional, Any, NoReturn, Dict, List
 
-from exceptions import InvalidName
-from command import Command, COMMANDS
+from .exceptions import InvalidName
+from .command import Command, COMMANDS
 
 
 class Collection:

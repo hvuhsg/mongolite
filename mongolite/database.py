@@ -1,8 +1,8 @@
 from typing import Any, Optional, Dict, Mapping, NoReturn, Iterable, List, Union
 import contextlib
 
-from collection import Collection
-from command import Command, COMMANDS
+from .collection import Collection
+from .command import Command, COMMANDS
 
 
 class Database:
