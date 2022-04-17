@@ -50,7 +50,7 @@ For now the library is supporting:
 - find / find_one
     - field matching
     - $eq
-    - $nq
+    - $ne
     - $gt / $gte
     - $lt / $lte
     - $not
