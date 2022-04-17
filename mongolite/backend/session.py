@@ -3,8 +3,9 @@ from threading import RLock
 from pathlib import Path
 
 from ..command import Command, COMMANDS
-from ..backend.storage_engine import StorageEngine
-from ..backend.utils import (
+from .consts import DEFAULT_CHUNK_SIZE
+from .storage_engine import StorageEngine
+from .utils import (
     document_filter_match,
     update_with_fields,
     grouper,
@@ -91,14 +92,14 @@ class Session:
         self._closed = True
 
     def _iter_read_documents(
-        self, database: str, collection: str, buffer_size: int = 10
+        self, database: str, collection: str, buffer_size: int = DEFAULT_CHUNK_SIZE
     ):
         offset_id = self._storage_engine.create_read_offset()
         while True:
             documents = self._storage_engine.get_documents(
                 database,
                 collection,
-                number_of_documents=buffer_size,
+                chunk_size=buffer_size,
                 offset_id=offset_id,
             )
 
@@ -125,7 +126,7 @@ class Session:
             yield update_with_fields(document.data, fields)
 
     def update(self, command: Command, database: str, collection: str):
-        group_size = 10
+        group_size = DEFAULT_CHUNK_SIZE
 
         for documents in grouper(
             group_size,
@@ -151,7 +152,7 @@ class Session:
                 break
 
     def delete(self, command: Command, database: str, collection: str):
-        group_size = 10
+        group_size = DEFAULT_CHUNK_SIZE
 
         for documents in grouper(
             group_size,
@@ -168,7 +169,7 @@ class Session:
                 break
 
     def replace(self, command: Command, database: str, collection: str):
-        group_size = 10
+        group_size = DEFAULT_CHUNK_SIZE
 
         for documents in grouper(
             group_size,

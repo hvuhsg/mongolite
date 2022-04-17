@@ -116,7 +116,7 @@ class StorageEngine:
         self,
         database_name: str,
         collection_name: str,
-        number_of_documents: int = None,
+        chunk_size: int = None,
         offset_id: str = None,
     ) -> List[Document]:
         documents = []
@@ -129,10 +129,10 @@ class StorageEngine:
                     offset = self._offsets[offset_id]
                     collection_file.seek(offset)
 
-                if number_of_documents is None:
+                if chunk_size is None:
                     loop = count(0, 1)
                 else:
-                    loop = range(number_of_documents)
+                    loop = range(chunk_size)
 
                 for _ in loop:
                     document_offset = collection_file.tell()
@@ -143,7 +143,6 @@ class StorageEngine:
 
                     if line.startswith("0"):
                         continue
-                    line.strip("0")
 
                     document = Document(
                         data=json.loads(line),
