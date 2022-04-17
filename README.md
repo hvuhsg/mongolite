@@ -1,8 +1,6 @@
 # mongolite
 Lite mongodb engine in python
 
-[![Tests](https://github.com/hvuhsg/mongolite/actions/workflows/test.yml/badge.svg)](https://github.com/hvuhsg/mongolite/actions/workflows/test.yml)
-
 ## Support
 The goal of this project is to create sqlite version for mongodb
 
