@@ -10,10 +10,28 @@ For now the library is supporting:
 - insert_many / insert_one
 - update_many / update_one
     - $set
+    - $unset
     - $inc
     - $addToSet
+      - $each
+    - $push
+      - $each
+      - $sort
+      - $slice
+    - $pull
 - find / find_one
     - field matching
+    - $eq
+    - $nq
+    - $gt / $gte
+    - $lt / $lte
+    - $not
+    - $and
+    - $or
+    - $nor
+    - $exists
+    - $in
+    - $nin
     - filter fields
 - replace_many / replace_one
 - create_collection

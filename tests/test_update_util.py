@@ -100,3 +100,9 @@ def test_push_sort_slice():
         doc,
         {"$push": {"a": {"$each": [1, 2, 3], "$slice": 2}}}
     ) == {"a": [0, 1]}
+
+
+def test_multi_update():
+    doc = {"a": 1}
+
+    assert update_document_with_override(doc, {"$set": {"b": 2}, "$inc": {"a": 1}})
