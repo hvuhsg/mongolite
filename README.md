@@ -1,6 +1,9 @@
-# mongolite
+# mongolite 
+Lite mongodb engine in python  
+
 [![Run Tests](https://github.com/hvuhsg/mongolite/actions/workflows/test.yml/badge.svg)](https://github.com/hvuhsg/mongolite/actions/workflows/test.yml)  
-Lite mongodb engine in python
+
+---
 
 ## Examples
 ```python
@@ -70,5 +73,3 @@ For now the library is supporting:
 - drop_database
 - thread safety
 - replaceable storage engine
-
-#### Note for developers using
