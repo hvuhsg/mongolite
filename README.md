@@ -1,4 +1,5 @@
 # mongolite
+[![Run Tests](https://github.com/hvuhsg/mongolite/actions/workflows/test.yml/badge.svg)](https://github.com/hvuhsg/mongolite/actions/workflows/test.yml)  
 Lite mongodb engine in python
 
 ## Examples
