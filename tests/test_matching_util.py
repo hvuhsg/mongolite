@@ -1,4 +1,4 @@
-from mongolite.backend.utils import document_filter_match
+from pymongolite.backend.utils import document_filter_match
 
 
 def test_simple_field_match():

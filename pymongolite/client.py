@@ -2,10 +2,10 @@ from typing import Optional
 from pathlib import Path
 import contextlib
 
-from mongolite.exceptions import MissingDatabaseName
-from mongolite.database import Database
-from mongolite.command import COMMANDS, Command
-from mongolite.backend.session import Session
+from pymongolite.exceptions import MissingDatabaseName
+from pymongolite.database import Database
+from pymongolite.command import COMMANDS, Command
+from pymongolite.backend.session import Session
 
 
 class MongoClient:

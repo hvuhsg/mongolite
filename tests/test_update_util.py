@@ -1,4 +1,4 @@
-from mongolite.backend.utils import update_document_with_override
+from pymongolite.backend.utils import update_document_with_override
 
 
 def test_set():

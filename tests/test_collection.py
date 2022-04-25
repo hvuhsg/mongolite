@@ -3,7 +3,7 @@ import shutil
 
 import pytest
 
-from mongolite import MongoClient
+from pymongolite import MongoClient
 
 
 @pytest.fixture(scope="function")

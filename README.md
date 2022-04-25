@@ -6,8 +6,9 @@ Lite mongodb engine in python
 ---
 
 ## Examples
+
 ```python
-from mongolite import MongoClient
+from pymongolite import MongoClient
 
 with MongoClient(dirpath="~/my_db_dir", database="my_db") as client:
     db = client.get_default_database()
@@ -20,7 +21,7 @@ with MongoClient(dirpath="~/my_db_dir", database="my_db") as client:
 ```
 
 ```python
-from mongolite import MongoClient
+from pymongolite import MongoClient
 
 client = MongoClient(dirpath="~/my_db_dir", database="my_db")
 
