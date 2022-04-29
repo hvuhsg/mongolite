@@ -10,15 +10,15 @@ import os
 import io
 import shutil
 
-from backend.exceptions import (
+from pymongolite.backend.exceptions import (
     DatabaseNotFound,
     CollectionNotFound,
 )
-from backend.document import Document
-from backend.storage_engine.base_engine import BaseEngine
-from backend.storage_engine.insert_instruction import InsertInstructions
-from backend.storage_engine.read_instructions import ReadInstructions
-from backend.storage_engine.update_instructions import UpdateInstructions
+from pymongolite.backend.document import Document
+from pymongolite.backend.storage_engine.base_engine import BaseEngine
+from pymongolite.backend.storage_engine.insert_instruction import InsertInstructions
+from pymongolite.backend.storage_engine.read_instructions import ReadInstructions
+from pymongolite.backend.storage_engine.update_instructions import UpdateInstructions
 
 
 class FilesEngine(BaseEngine):
