@@ -15,12 +15,20 @@ class COMMANDS(IntEnum):
 
 
 class Command:
-    def __init__(self, cmd: COMMANDS, **arguments):
+    def __init__(
+        self,
+        database_name: str,
+        cmd: COMMANDS,
+        collection_name: str = None,
+        **arguments,
+    ):
         self.cmd = cmd
         self.arguments = arguments
+        self.database_name = database_name
+        self.collection_name = collection_name
 
     def __getattr__(self, item):
         try:
             return self.arguments[item]
         except KeyError:
-            return getattr(self, item)
+            return getattr(self, item, None)

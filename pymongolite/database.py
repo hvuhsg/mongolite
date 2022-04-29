@@ -62,8 +62,10 @@ class Database:
     def _create(self):
         with self.__client._open_session() as session:
             session.exc_command(
-                command=Command(cmd=COMMANDS.create_database),
-                database=self.__name,
+                command=Command(
+                    cmd=COMMANDS.create_database,
+                    database_name=self.__name,
+                ),
             )
 
     def get_collection(
@@ -129,8 +131,11 @@ class Database:
 
         with self.__client._open_session() as session:
             collection_name_iter = session.exc_command(
-                command=Command(cmd=COMMANDS.get_collection_list, **kwargs),
-                database=self.__name,
+                command=Command(
+                    cmd=COMMANDS.get_collection_list,
+                    database_name=self.__name,
+                    **kwargs,
+                ),
             )
 
             collection_iter = (
@@ -212,9 +217,12 @@ class Database:
 
         with self.__client._open_session() as session:
             return session.exc_command(
-                command=Command(cmd=COMMANDS.drop_collection, comment=comment),
-                collection=name,
-                database=self.__name,
+                command=Command(
+                    cmd=COMMANDS.drop_collection,
+                    database_name=self.__name,
+                    collection_name=name,
+                    comment=comment,
+                ),
             )
 
     # See PYTHON-3084.

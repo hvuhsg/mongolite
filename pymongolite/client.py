@@ -38,8 +38,7 @@ class MongoClient:
             name = self.__default_database_name
 
         self.__session.exc_command(
-            command=Command(cmd=COMMANDS.drop_database),
-            database=name,
+            command=Command(cmd=COMMANDS.drop_database, database_name=name),
         )
 
     def get_default_database(self, default: Optional[str] = None):

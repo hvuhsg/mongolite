@@ -42,10 +42,12 @@ class Collection:
         """Sends a create command with the given options."""
         with self.__database._open_session() as session:
             session.exc_command(
-                command=Command(cmd=COMMANDS.create_collection),
-                collection=self.__name,
-                database=self.__database.name,
-                **options,
+                command=Command(
+                    cmd=COMMANDS.create_collection,
+                    database_name=self.__database.name,
+                    collection_name=self.__name,
+                    **options,
+                ),
             )
 
     def __getattr__(self, name: str) -> "Collection":
@@ -95,53 +97,73 @@ class Collection:
     def insert_one(self, doc: Dict):
         with self.__database._open_session() as session:
             return session.exc_command(
-                command=Command(cmd=COMMANDS.insert, documents=[doc]),
-                collection=self.__name,
-                database=self.__database.name,
+                command=Command(
+                    cmd=COMMANDS.insert,
+                    database_name=self.__database.name,
+                    collection_name=self.__name,
+                    documents=[doc],
+                ),
             )
 
     def insert_many(self, docs: List[Dict]):
         with self.__database._open_session() as session:
             return session.exc_command(
-                command=Command(cmd=COMMANDS.insert, documents=docs),
-                collection=self.__name,
-                database=self.__database.name,
+                command=Command(
+                    cmd=COMMANDS.insert,
+                    database_name=self.__database.name,
+                    collection_name=self.__name,
+                    documents=docs,
+                ),
             )
 
     def delete_one(self, filter: Dict):
         with self.__database._open_session() as session:
             return session.exc_command(
-                command=Command(cmd=COMMANDS.delete, filter=filter, many=False),
-                collection=self.__name,
-                database=self.__database.name,
+                command=Command(
+                    cmd=COMMANDS.delete,
+                    database_name=self.__database.name,
+                    collection_name=self.__name,
+                    filter=filter,
+                    many=False,
+                ),
             )
 
     def delete_many(self, filter: Dict):
         with self.__database._open_session() as session:
             return session.exc_command(
-                command=Command(cmd=COMMANDS.delete, filter=filter, many=True),
-                collection=self.__name,
-                database=self.__database.name,
+                command=Command(
+                    cmd=COMMANDS.delete,
+                    database_name=self.__database.name,
+                    collection_name=self.__name,
+                    filter=filter,
+                    many=True,
+                ),
             )
 
     def update_one(self, filter: Dict, override: Dict):
         with self.__database._open_session() as session:
             return session.exc_command(
                 command=Command(
-                    cmd=COMMANDS.update, filter=filter, override=override, many=False
+                    cmd=COMMANDS.update,
+                    database_name=self.__database.name,
+                    collection_name=self.__name,
+                    filter=filter,
+                    override=override,
+                    many=False,
                 ),
-                collection=self.__name,
-                database=self.__database.name,
             )
 
     def update_many(self, filter: Dict, override: Dict):
         with self.__database._open_session() as session:
             return session.exc_command(
                 command=Command(
-                    cmd=COMMANDS.update, filter=filter, override=override, many=True
+                    cmd=COMMANDS.update,
+                    database_name=self.__database.name,
+                    collection_name=self.__name,
+                    filter=filter,
+                    override=override,
+                    many=True,
                 ),
-                collection=self.__name,
-                database=self.__database.name,
             )
 
     def replace_one(self, filter: Dict, replacement: Dict):
@@ -149,12 +171,12 @@ class Collection:
             return session.exc_command(
                 command=Command(
                     cmd=COMMANDS.replace,
+                    database_name=self.__database.name,
+                    collection_name=self.__name,
                     filter=filter,
                     replacement=replacement,
                     many=False,
                 ),
-                collection=self.__name,
-                database=self.__database.name,
             )
 
     def replace_many(self, filter: Dict, replacement: Dict):
@@ -162,12 +184,12 @@ class Collection:
             return session.exc_command(
                 command=Command(
                     cmd=COMMANDS.replace,
+                    database_name=self.__database.name,
+                    collection_name=self.__name,
                     filter=filter,
                     replacement=replacement,
                     many=True,
                 ),
-                collection=self.__name,
-                database=self.__database.name,
             )
 
     def drop(self, comment: Optional[Any] = None):
@@ -186,10 +208,14 @@ class Collection:
         with self.__database._open_session() as session:
             return session.exc_command(
                 command=Command(
-                    cmd=COMMANDS.find, filter=filter, fields=fields, many=many, **kwargs
+                    cmd=COMMANDS.find,
+                    database_name=self.__database.name,
+                    collection_name=self.__name,
+                    filter=filter,
+                    fields=fields,
+                    many=many,
+                    **kwargs,
                 ),
-                collection=self.__name,
-                database=self.__database.name,
             )
 
     def find_one(self, *args, **kwargs):

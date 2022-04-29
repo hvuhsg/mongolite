@@ -44,3 +44,7 @@ class CollectionIsRequired(MongoliteBackendException):
 
 class DatabaseIsRequired(MongoliteBackendException):
     pass
+
+
+class SessionClosedError(MongoliteBackendException):
+    pass
