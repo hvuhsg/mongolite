@@ -12,6 +12,8 @@ class COMMANDS(IntEnum):
     delete = 7
     find = 8
     replace = 9
+    create_index = 10
+    delete_index = 11
 
 
 class Command:

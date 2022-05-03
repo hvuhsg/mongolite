@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Tuple, Any
 from abc import ABC, abstractmethod
 
 from ..storage_engine.read_instructions import ReadInstructions
@@ -15,11 +15,7 @@ class BaseEngine(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def insert_to_root_index(self, document_id: str, file_index: int):
-        raise NotImplementedError
-
-    @abstractmethod
-    def insert_documents(self, database_name: str, collection_name: str, documents: List[dict]):
+    def insert_documents(self, database_name: str, collection_name: str, documents: List[Tuple[dict, Any]]):
         raise NotImplementedError
 
     @abstractmethod

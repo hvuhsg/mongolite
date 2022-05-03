@@ -228,3 +228,25 @@ class Collection:
             return next(results)
         except StopIteration:
             return None
+
+    def create_index(self, index: dict):
+        with self.__database._open_session() as session:
+            return session.exc_command(
+                command=Command(
+                    cmd=COMMANDS.create_index,
+                    database_name=self.__database.name,
+                    collection_name=self.__name,
+                    index=index,
+                ),
+            )
+
+    def delete_index(self, index_id: str):
+        with self.__database._open_session() as session:
+            return session.exc_command(
+                command=Command(
+                    cmd=COMMANDS.delete_index,
+                    database_name=self.__database.name,
+                    collection_name=self.__name,
+                    index_id=index_id,
+                ),
+            )

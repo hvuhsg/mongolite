@@ -77,9 +77,11 @@ class FilesEngine(BaseEngine):
     def _is_line_marked_as_deleted(self, line: str) -> bool:
         return line.startswith("0")
 
-    def _insert_document(self, file, document: dict):
+    def _insert_document(self, file, document: dict) -> int:
         file.seek(0, io.SEEK_END)
+        seek_value = file.tell()
         file.write(self._serialize_document(document) + "\n")
+        return seek_value
 
     @contextmanager
     def _collection_lock(self, database_name: str, collection_name: str):
@@ -176,7 +178,7 @@ class FilesEngine(BaseEngine):
 
                     document = Document(
                         data=self._deserialize_document(line),
-                        index=document_index,
+                        lookup_key=document_index,
                     )
                     documents.append(document)
 
@@ -214,10 +216,15 @@ class FilesEngine(BaseEngine):
         database_name: str,
         collection_name: str,
         insert_instructions: InsertInstructions,
-    ):
+    ) -> List[int]:
         collection_path = self._get_collection_path(
             database_name=database_name, collection_name=collection_name
         )
+        lookup_keys = []
+
         with open(collection_path, "r+") as file:
             for document in insert_instructions:
-                self._insert_document(file, document)
+                document_lookup_key = self._insert_document(file, document)
+                lookup_keys.append(document_lookup_key)
+
+        return lookup_keys

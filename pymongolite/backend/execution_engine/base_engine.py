@@ -2,11 +2,15 @@ from typing import List
 from abc import ABC, abstractmethod
 
 from ..storage_engine.base_engine import BaseEngine as BaseStorgeEngine
+from ..indexing_engine.base_engine import BaseEngine as BaseIndexingEngine
 
 
 class BaseEngine(ABC):
-    def __init__(self, storage_engine: BaseStorgeEngine):
+    def __init__(self, storage_engine: BaseStorgeEngine, indexing_engine: BaseIndexingEngine = None):
         self._storage_engine = storage_engine
+
+        self._indexing_engine = indexing_engine
+        self._is_indexing_engine_used = self._indexing_engine is not None
 
     @abstractmethod
     def create_database(self, database_name: str) -> bool:
@@ -70,4 +74,12 @@ class BaseEngine(ABC):
 
     @abstractmethod
     def insert(self, database_name: str, collection_name: str, filter_: dict):
+        raise NotImplementedError
+
+    @abstractmethod
+    def create_index(self, database_name: str, collection_name: str, index: dict):
+        raise NotImplementedError
+
+    @abstractmethod
+    def delete_index(self, database_name: str, collection_name: str, index_id: str) -> bool:
         raise NotImplementedError

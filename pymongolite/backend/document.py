@@ -1,4 +1,4 @@
 class Document:
-    def __init__(self, data: dict, index: int):
+    def __init__(self, data: dict, lookup_key: int):
         self.data = data
-        self.index = index
+        self.lookup_key = lookup_key
