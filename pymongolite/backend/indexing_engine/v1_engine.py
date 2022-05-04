@@ -115,7 +115,6 @@ class V1Engine(BaseEngine):
                 if operator not in ['$gt', '$gte', '$eq', '$ne', '$lt', '$lte', '$exists']:
                     continue
 
-                diff = False
                 ids = None
 
                 if operator == "$gt":
@@ -153,17 +152,13 @@ class V1Engine(BaseEngine):
                     i = bisect_right(index_values, value)
                     ids = {value_id[1] for value_id in index[:i]}
 
-                if operator == "$exists":
+                if operator == "$exists" and value:
                     ids = {value_id[1] for value_id in index}
-                    diff = not value
 
                 if ids is not None and ids_set is None:
                     ids_set = ids
                 elif ids is not None:
-                    if diff:
-                        ids_set.difference_update(ids)
-                    else:
-                        ids_set.intersection_update(ids)
+                    ids_set.intersection_update(ids)
 
         if ids_set is None:
             return ReadInstructions(offset=0)

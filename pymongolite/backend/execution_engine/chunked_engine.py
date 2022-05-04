@@ -360,8 +360,10 @@ class ChunkedEngine(BaseEngine):
 
     def _iter_documents_filtered(self, database: str, collection: str, filter_: dict, use_indexes: bool = True):
         read_instructions = ReadInstructions(offset=0, chunk_size=self._chunk_size)
+        is_simple_filter = len(set(filter_.keys()).intersection({"$or", "$and", "$nor", "$not"})) == 0
 
-        if filter_ and self._is_indexing_engine_used and use_indexes:
+        if filter_ and self._is_indexing_engine_used and use_indexes and is_simple_filter:
+            # TODO: support complex filters (including $or, $nor, $not, $and)
             read_instructions = self._indexing_engine.get_documents(
                 database_name=database,
                 collection_name=collection,

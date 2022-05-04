@@ -112,3 +112,15 @@ def test_delete_document_from_index(collection):
 
     assert list(collection.find({"age": {"$eq": 22}}, {"_id": 0})) == []
     assert list(collection.find({"age": {"$eq": 15}}, {"_id": 0})) == [{'age': 15, 'name': 'dave'}]
+
+
+def test_exists_false_index_query(collection):
+    collection.create_index({'age': 1})
+
+    collection.insert_one({"name": "jon", "age": 22})
+    collection.insert_one({"name": "dave", "age": 15})
+    collection.insert_one({"name": "mosh", "age": 11})
+    collection.insert_one({"name": "nina", "age": 25})
+    collection.insert_one({"name": "yoyo"})
+
+    assert collection.find_one({"age": {"$exists": False}}, {"_id": 0}) == {"name": "yoyo"}
