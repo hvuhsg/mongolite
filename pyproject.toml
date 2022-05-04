@@ -1,8 +1,8 @@
 [tool.poetry]
 name = "pymongolite"
-version = "0.1.0"
+version = "0.1.1"
 description = ""
-authors = ["Your Name <you@example.com>"]
+authors = ["yehoyada <yehoyada.sht@gmail.com>"]
 
 [tool.poetry.dependencies]
 python = "^3.8"
