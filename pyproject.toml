@@ -1,7 +1,8 @@
 [tool.poetry]
 name = "pymongolite"
-version = "0.1.1"
+version = "0.1.3"
 description = ""
+readme = "README.md"
 authors = ["yehoyada <yehoyada.sht@gmail.com>"]
 
 [tool.poetry.dependencies]

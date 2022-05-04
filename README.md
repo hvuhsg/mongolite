@@ -5,6 +5,10 @@ Lite mongodb engine in python
 
 ---
 
+```commandline
+pip install pymongolite
+```
+
 ## Examples
 
 ```python
