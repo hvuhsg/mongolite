@@ -98,3 +98,16 @@ def test_get_index_list(collection):
     collection.delete_index(index_id)
 
     assert collection.get_indexes() == []
+
+
+def test_delete_document_from_index(collection):
+    collection.create_index({'age': 1})
+
+    collection.insert_one({"name": "jon", "age": 22})
+    collection.insert_one({"name": "dave", "age": 15})
+    collection.insert_one({"name": "mosh", "age": 11})
+    collection.insert_one({"name": "nina", "age": 25})
+
+    collection.delete_many({"age": {"$gt": 15}})
+
+    assert list(collection.find({"age": {"$eq": 15}}, {"_id": 0})) == [{'age': 15, 'name': 'dave'}]
