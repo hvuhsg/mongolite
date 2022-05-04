@@ -7,7 +7,7 @@ from ..storage_engine.read_instructions import ReadInstructions
 class BaseEngine(ABC):
 
     @abstractmethod
-    def create_index(self, database_name: str, collection_name: str, index: dict):
+    def create_index(self, database_name: str, collection_name: str, index: dict) -> bool:
         raise NotImplementedError
 
     @abstractmethod

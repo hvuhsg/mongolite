@@ -12,7 +12,7 @@ class V1Engine(BaseEngine):
         self.root_index = {}  # {ObjectID: file_index}
         self.indexes = {}  # {db_name: {collection_name: {field_name: index}}
 
-    def create_index(self, database_name: str, collection_name: str, index: dict):
+    def create_index(self, database_name: str, collection_name: str, index: dict) -> bool:
         if len(index) > 1:
             raise ValueError("Index must be with one pair of key and value")
 
@@ -25,6 +25,8 @@ class V1Engine(BaseEngine):
         field, index_type = next(iter(index.items()))
         if field not in self.indexes[database_name][collection_name]:
             self.indexes[database_name][collection_name][field] = sortedlist(key=lambda t: t[0])
+
+        return True
 
     def delete_index(self, database_name: str, collection_name: str, field: str) -> bool:
         if database_name in self.indexes and collection_name in self.indexes[database_name]:
@@ -79,9 +81,10 @@ class V1Engine(BaseEngine):
             index_values = [item[0] for item in index]
 
             for operator, value in expression.items():
-                if operator not in ['$gt', '$gte', '$eq', '$ne', '$lt', '$lte']:
+                if operator not in ['$gt', '$gte', '$eq', '$ne', '$lt', '$lte', '$exists']:
                     continue
 
+                diff = False
                 ids = None
 
                 if operator == "$gt":
@@ -119,13 +122,25 @@ class V1Engine(BaseEngine):
                     i = bisect_right(index_values, value)
                     ids = {value_id[1] for value_id in index[:i]}
 
+                if operator == "$exists":
+                    ids = {value_id[1] for value_id in index}
+                    diff = not value
+
                 if ids is not None and ids_set is None:
                     ids_set = ids
                 elif ids is not None:
-                    ids_set.intersection_update(ids)
+                    if diff:
+                        ids_set.difference_update(ids)
+                    else:
+                        ids_set.intersection_update(ids)
 
         if ids_set is None:
             return ReadInstructions(offset=0)
+
+        if not ids_set:
+            read_instructions = ReadInstructions(offset=0)
+            read_instructions.end()
+            return read_instructions
 
         return ReadInstructions(indexes={self.root_index[id_] for id_ in ids_set})
 

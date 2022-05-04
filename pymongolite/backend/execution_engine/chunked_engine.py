@@ -291,7 +291,19 @@ class ChunkedEngine(BaseEngine):
         if not self._is_indexing_engine_used:
             return
 
-        return self._indexing_engine.create_index(database_name, collection_name, index)
+        created = self._indexing_engine.create_index(database_name, collection_name, index)
+        if not created:
+            return False
+
+        index_field = next(iter(index.keys()))
+        filter_ = {index_field: {"$exists": True}}
+
+        for documents in grouper(
+                self._chunk_size,
+                self._iter_documents_filtered(database_name, collection_name, filter_, use_indexes=False),
+        ):
+            documents = [(document.data, document.lookup_key) for document in documents]
+            self._indexing_engine.insert_documents(database_name, collection_name, documents=documents)
 
     def delete_index(self, database_name: str, collection_name: str, index_id: str) -> bool:
         if not self._is_indexing_engine_used:
@@ -331,17 +343,15 @@ class ChunkedEngine(BaseEngine):
                 document.data['_id'] = ObjectId(document.data['_id'])
                 yield document
 
-    def _iter_documents_filtered(self, database: str, collection: str, filter_: dict):
+    def _iter_documents_filtered(self, database: str, collection: str, filter_: dict, use_indexes: bool = True):
         read_instructions = ReadInstructions(offset=0, chunk_size=self._chunk_size)
 
-        if filter_ and self._is_indexing_engine_used:
-            print(filter_)
+        if filter_ and self._is_indexing_engine_used and use_indexes:
             read_instructions = self._indexing_engine.get_documents(
                 database_name=database,
                 collection_name=collection,
                 filter_=filter_
             )
-            print(read_instructions.offset, read_instructions.indexes)
 
         for document in self._iter_read_documents(database, collection, read_instructions):
             if document_filter_match(document.data, filter_):
