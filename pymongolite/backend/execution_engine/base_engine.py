@@ -83,3 +83,7 @@ class BaseEngine(ABC):
     @abstractmethod
     def delete_index(self, database_name: str, collection_name: str, index_id: str) -> bool:
         raise NotImplementedError
+
+    @abstractmethod
+    def get_indexes_list(self, database_name: str, collection_name: str) -> list:
+        raise NotImplementedError
