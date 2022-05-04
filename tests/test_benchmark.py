@@ -81,3 +81,22 @@ def test_find_many(benchmark, collection):
         collection.find({})
 
     benchmark(bench)
+
+
+def test_find_with_index(benchmark, collection):
+    collection.insert_many([{"age": i} for i in range(1000)])
+    collection.create_index({"age": 1})
+
+    def bench():
+        list(collection.find({"age": {"$gt": 950}}))
+
+    benchmark(bench)
+
+
+def test_find_without_index(benchmark, collection):
+    collection.insert_many([{"age": i} for i in range(1000)])
+
+    def bench():
+        list(collection.find({"age": {"$gt": 950}}))
+
+    benchmark(bench)
