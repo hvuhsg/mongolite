@@ -110,4 +110,5 @@ def test_delete_document_from_index(collection):
 
     collection.delete_many({"age": {"$gt": 15}})
 
+    assert list(collection.find({"age": {"$eq": 22}}, {"_id": 0})) == []
     assert list(collection.find({"age": {"$eq": 15}}, {"_id": 0})) == [{'age': 15, 'name': 'dave'}]
