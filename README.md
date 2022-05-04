@@ -36,6 +36,29 @@ print(user) # -> {"name": "yoyo", "age": 20}
 client.close()
 ```
 
+#### Indexes
+```python
+from pymongolite import MongoClient
+
+client = MongoClient(dirpath="~/my_db_dir", database="my_db")
+
+db = client.get_default_database()
+collection = db.get_collection("users")
+
+# Make query with name faster
+collection.create_index({"name": 1})
+
+collection.insert_one({"name": "yoyo"})
+collection.update_one({"name": "yoyo"}, {"$set": {"age": 20}})
+user = collection.find_one({"age": 20})
+print(user) # -> {"name": "yoyo", "age": 20}
+
+indexes = collection.get_indexes()
+print(indexes)  # -> [{'id': UUID('8bb4cac8-ae52-4fff-9e69-9f36a99956cd'), 'field': 'age', 'type': 1, 'size': 1}]
+
+client.close()
+```
+
 ## Support
 The goal of this project is to create sqlite version for mongodb
 

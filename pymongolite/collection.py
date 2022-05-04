@@ -250,3 +250,13 @@ class Collection:
                     index_id=index_id,
                 ),
             )
+
+    def get_indexes(self) -> list:
+        with self.__database._open_session() as session:
+            return session.exc_command(
+                command=Command(
+                    cmd=COMMANDS.get_index_list,
+                    database_name=self.__database.name,
+                    collection_name=self.__name,
+                ),
+            )

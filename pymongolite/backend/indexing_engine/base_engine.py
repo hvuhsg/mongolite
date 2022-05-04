@@ -15,6 +15,10 @@ class BaseEngine(ABC):
         raise NotImplementedError
 
     @abstractmethod
+    def get_indexes_list(self, database_name: str, collection_name: str) -> list:
+        raise NotImplementedError
+
+    @abstractmethod
     def insert_documents(self, database_name: str, collection_name: str, documents: List[Tuple[dict, Any]]):
         raise NotImplementedError
 

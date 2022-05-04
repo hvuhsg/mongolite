@@ -122,6 +122,13 @@ class ChunkedEngine(BaseEngine):
                 index_id=command.index_id,
             )
 
+        if command.cmd == COMMANDS.get_index_list:
+            self._raise_on_none_collection(command.collection_name)
+            return self.get_indexes_list(
+                database_name=command.database_name,
+                collection_name=command.collection_name,
+            )
+
         return None
 
     def create_database(self, database_name: str) -> bool:
@@ -291,8 +298,8 @@ class ChunkedEngine(BaseEngine):
         if not self._is_indexing_engine_used:
             return
 
-        created = self._indexing_engine.create_index(database_name, collection_name, index)
-        if not created:
+        index_uuid = self._indexing_engine.create_index(database_name, collection_name, index)
+        if index_uuid is None:
             return False
 
         index_field = next(iter(index.keys()))
@@ -305,11 +312,19 @@ class ChunkedEngine(BaseEngine):
             documents = [(document.data, document.lookup_key) for document in documents]
             self._indexing_engine.insert_documents(database_name, collection_name, documents=documents)
 
+        return index_uuid
+
     def delete_index(self, database_name: str, collection_name: str, index_id: str) -> bool:
         if not self._is_indexing_engine_used:
             return False
 
         return self._indexing_engine.delete_index(database_name, collection_name, index_id)
+
+    def get_indexes_list(self, database_name: str, collection_name: str) -> list:
+        if not self._is_indexing_engine_used:
+            return []
+
+        return self._indexing_engine.get_indexes_list(database_name, collection_name)
 
     def close(self):
         self._closed = True
