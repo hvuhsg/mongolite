@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Any
 from abc import ABC, abstractmethod
 
 from .read_instructions import ReadInstructions
@@ -60,5 +60,5 @@ class BaseEngine(ABC):
         database_name: str,
         collection_name: str,
         insert_instructions: InsertInstructions,
-    ):
+    ) -> List[Any]:
         raise NotImplementedError

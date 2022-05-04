@@ -28,7 +28,7 @@ def test_insert(collection):
     with open("col_test/db/col", "r") as file:
         data = file.read()
 
-    assert data == '{"a": true}\n'
+    assert data.startswith('{"a": true')
 
 
 def test_insert_many(collection):
@@ -37,13 +37,14 @@ def test_insert_many(collection):
     with open("col_test/db/col", "r") as file:
         data = file.read()
 
-    assert data == '{"a": true}\n{"b": false}\n'
+    assert '"a": true' in data
+    assert '"b": false' in data
 
 
 def test_find_one(collection):
     collection.insert_one({"a": 1, "b": 2})
 
-    doc = collection.find_one({"a": 1})
+    doc = collection.find_one({"a": 1}, {'_id': 0})
 
     assert doc == {"a": 1, "b": 2}
 
@@ -58,7 +59,7 @@ def test_find_many(collection):
     collection.insert_one({"a": 1, "b": 4})
     collection.insert_one({"a": 5, "b": 2})
 
-    docs = collection.find({"a": 1})
+    docs = collection.find({"a": 1}, {"_id": 0})
 
     assert list(docs) == [{"a": 1, "b": 2}, {"a": 1, "b": 3}, {"a": 1, "b": 4}]
 
@@ -69,7 +70,7 @@ def test_find_with_fields(collection):
     doc = collection.find_one({}, {"a": 1})
     assert doc == {"a": 10}
 
-    doc = collection.find_one({}, {"a": 0})
+    doc = collection.find_one({}, {"a": 0, '_id': 0})
     assert doc == {"b": 2}
 
 
@@ -79,12 +80,12 @@ def test_update_one(collection):
 
     collection.update_one({}, {"$set": {"b": 2}})
 
-    doc = collection.find_one({"b": 2})
+    doc = collection.find_one({"b": 2}, {'_id': 0})
     assert doc == {"a": 1, "b": 2}
 
     collection.update_one({"a": 1}, {"$inc": {"a": 9}})
 
-    doc = collection.find_one({"a": 10})
+    doc = collection.find_one({"a": 10}, {'_id': 0})
     assert doc == {"a": 10, "b": 2}
 
 
@@ -93,12 +94,12 @@ def test_update_many(collection):
 
     collection.update_many({}, {"$set": {"b": 2}})
 
-    docs = collection.find({})
+    docs = collection.find({}, {"_id": 0})
     assert list(docs) == [{"a": 100, "b": 2}, {"a": 100, "b": 2}]
 
     collection.update_many({}, {"$inc": {"a": -99}})
 
-    docs = collection.find({})
+    docs = collection.find({}, {"_id": 0})
     assert list(docs) == [{"a": 1, "b": 2}, {"a": 1, "b": 2}]
 
 
@@ -106,7 +107,7 @@ def test_delete_one(collection):
     collection.insert_many([{"b": 1}, {"a": 1}, {"c": 1}, {"a": 1}])
     collection.delete_one({"a": 1})
 
-    assert list(collection.find({"a": 1})) == [{"a": 1}]
+    assert list(collection.find({"a": 1}, {"_id": 0})) == [{"a": 1}]
 
 
 def test_delete_many(collection):
@@ -120,11 +121,11 @@ def test_replace_one(collection):
     collection.insert_one({"a": 1})
     collection.replace_one({}, {"b": 1})
 
-    assert collection.find_one({}) == {"b": 1}
+    assert collection.find_one({}, {"_id": 0}) == {"b": 1}
 
 
 def test_replace_many(collection):
     collection.insert_many([{"a": 1}, {"a": 1}])
     collection.replace_many({}, {"b": 1})
 
-    assert list(collection.find({})) == [{"b": 1}, {"b": 1}]
+    assert list(collection.find({}, {"_id": 0})) == [{"b": 1}, {"b": 1}]
