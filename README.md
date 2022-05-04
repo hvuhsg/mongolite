@@ -17,7 +17,7 @@ with MongoClient(dirpath="~/my_db_dir", database="my_db") as client:
     collection.insert_one({"name": "yoyo"})
     collection.update_one({"name": "yoyo"}, {"$set": {"age": 20}})
     user = collection.find_one({"age": 20})
-    print(user) # -> {"name": "yoyo", "age": 20}
+    print(user) # -> {"_id": ObjectId(...), "name": "yoyo", "age": 20}
 ```
 
 ```python
@@ -31,7 +31,7 @@ collection = db.get_collection("users")
 collection.insert_one({"name": "yoyo"})
 collection.update_one({"name": "yoyo"}, {"$set": {"age": 20}})
 user = collection.find_one({"age": 20})
-print(user) # -> {"name": "yoyo", "age": 20}
+print(user) # -> {"_id": ObjectId(...), "name": "yoyo", "age": 20}
 
 client.close()
 ```
@@ -51,7 +51,7 @@ collection.create_index({"name": 1})
 collection.insert_one({"name": "yoyo"})
 collection.update_one({"name": "yoyo"}, {"$set": {"age": 20}})
 user = collection.find_one({"age": 20})
-print(user) # -> {"name": "yoyo", "age": 20}
+print(user) # -> {"_id": ObjectId(...), "name": "yoyo", "age": 20}
 
 indexes = collection.get_indexes()
 print(indexes)  # -> [{'id': UUID('8bb4cac8-ae52-4fff-9e69-9f36a99956cd'), 'field': 'age', 'type': 1, 'size': 1}]
