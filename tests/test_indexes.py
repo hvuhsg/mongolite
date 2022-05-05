@@ -124,3 +124,14 @@ def test_exists_false_index_query(collection):
     collection.insert_one({"name": "yoyo"})
 
     assert collection.find_one({"age": {"$exists": False}}, {"_id": 0}) == {"name": "yoyo"}
+
+
+def test_find_by_object_id(collection):
+    collection.insert_one({"name": "jon", "age": 22})
+    object_id = collection.insert_one({"name": "dave", "age": 15})
+    collection.insert_one({"name": "mosh", "age": 11})
+    collection.insert_one({"name": "nina", "age": 25})
+    collection.insert_one({"name": "yoyo"})
+
+    assert list(collection.find({"_id": object_id}, {"_id": 0})) == [{"name": "dave", "age": 15}]
+    assert collection.find_one({"_id": object_id}, {"_id": 0}) == {"name": "dave", "age": 15}

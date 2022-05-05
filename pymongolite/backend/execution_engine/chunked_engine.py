@@ -275,8 +275,12 @@ class ChunkedEngine(BaseEngine):
                 break
 
     def insert(self, database_name: str, collection_name: str, documents: List[dict]):
+        inserted_object_ids = []
+
         for document in documents:
-            document['_id'] = str(ObjectId())
+            oid = ObjectId()
+            document['_id'] = str(oid)
+            inserted_object_ids.append(oid)
 
         documents_lookup_keys = self._storage_engine.insert_documents(
             database_name=database_name,
@@ -293,6 +297,8 @@ class ChunkedEngine(BaseEngine):
                     for document, lookup_key in zip(documents, documents_lookup_keys)
                 ]
             )
+
+        return inserted_object_ids
 
     def create_index(self, database_name: str, collection_name: str, index: dict):
         if not self._is_indexing_engine_used:
