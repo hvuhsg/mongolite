@@ -1,9 +1,12 @@
 [tool.poetry]
 name = "pymongolite"
-version = "0.1.5"
+version = "0.1.6"
 description = ""
 readme = "README.md"
 authors = ["yehoyada <yehoyada.sht@gmail.com>"]
+homepage = "https://github.com/hvuhsg/mongolite"
+repositry = "https://github.com/hvuhsg/mongolite"
+keywords = ["mongo", "python", "lite", "local", "simple", "pymongo", "NoSQL", "db", "database"]
 
 [tool.poetry.dependencies]
 python = "^3.8"
