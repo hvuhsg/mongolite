@@ -1,4 +1,4 @@
-from ..exceptions import MongoliteBackendException
+from pymongolite.backend.exceptions import MongoliteBackendException
 
 __all__ = ["CollectionIsRequired", "DatabaseIsRequired"]
 

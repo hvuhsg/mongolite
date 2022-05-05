@@ -1,20 +1,19 @@
-from typing import List, Tuple, Union
-from bisect import bisect_right, bisect_left
+from typing import List, Tuple, Union, Dict, Any
 from uuid import uuid4, UUID
 
-from blist import sortedlist
-
-from .base_engine import BaseEngine
-from .index_metadata import IndexMetadata
-from ..storage_engine.read_instructions import ReadInstructions
-from ..objectid import ObjectId
+from pymongolite.backend.objectid import ObjectId
+from pymongolite.backend.read_instructions import ReadInstructions
+from pymongolite.backend.indexing_engine.base_engine import BaseEngine
+from pymongolite.backend.indexing_engine.index_metadata import IndexMetadata
+from pymongolite.backend.indexing_engine.base_index import BaseIndex
+from pymongolite.backend.indexing_engine.index_types.sorted_list_basic_index import SortedListBasicIndex
 
 
 class V1Engine(BaseEngine):
     def __init__(self):
-        self._root_index = {}  # {ObjectID: file_index}
-        self._indexes = {}  # {db_name: {collection_name: {index_id: index}}
-        self._indexes_meta = {}  # {index_id: index_metadata}
+        self._root_index: Dict[ObjectId, Any] = {}  # {ObjectID: file_index}
+        self._indexes: Dict[str, Dict[str, Dict[str, BaseIndex]]] = {}  # {db_name: {collection_name: {field: index}}
+        self._indexes_meta: Dict[str, IndexMetadata] = {}  # {index_id: index_metadata}
 
     def create_index(
         self, database_name: str, collection_name: str, index: dict
@@ -33,17 +32,21 @@ class V1Engine(BaseEngine):
 
         if field not in self._indexes[database_name][collection_name]:
             index_uuid = uuid4()
-            self._indexes[database_name][collection_name][field] = sortedlist(
-                key=lambda t: t[0]
-            )
-            self._indexes_meta[index_uuid] = IndexMetadata(
+            if index_type == 1:
+                self._indexes[database_name][collection_name][field] = SortedListBasicIndex()
+            else:
+                raise TypeError(f"Index of type '{index_type}' not implemented")
+            self._indexes_meta[str(index_uuid)] = IndexMetadata(
                 field=field, type_=index_type
             )
 
         return index_uuid
 
     def delete_index(
-        self, database_name: str, collection_name: str, index_uuid: str
+            self,
+            database_name: str,
+            collection_name: str,
+            index_uuid: str,
     ) -> bool:
         if (
             database_name not in self._indexes
@@ -51,7 +54,7 @@ class V1Engine(BaseEngine):
         ):
             return False
 
-        index_metadata: IndexMetadata = self._indexes_meta.pop(index_uuid)
+        index_metadata: IndexMetadata = self._indexes_meta.pop(index_uuid, None)
 
         if index_metadata is None:
             return False
@@ -79,10 +82,10 @@ class V1Engine(BaseEngine):
             for index_uuid, index_metadata in self._indexes_meta.items()
         ]
 
-    def _insert_to_root_index(self, document_id: str, lookup_key: int):
+    def _insert_to_root_index(self, document_id: ObjectId, lookup_key: int):
         self._root_index[document_id] = lookup_key
 
-    def _remove_from_root_index(self, document_id: str) -> bool:
+    def _remove_from_root_index(self, document_id: ObjectId) -> bool:
         return self._root_index.pop(document_id, None) is not None
 
     def insert_documents(
@@ -110,7 +113,7 @@ class V1Engine(BaseEngine):
                         field, None
                     )
                 ) is not None:
-                    index.add((document[field], document_id))
+                    index.add(document[field], document_id)
 
     def delete_documents(
         self, database_name: str, collection_name: str, documents: List[dict]
@@ -132,98 +135,46 @@ class V1Engine(BaseEngine):
 
             for field in fields_with_indexes.intersection(set(document.keys())):
                 index = self._indexes[database_name][collection_name][field]
-                index.remove((document[field], document_id))
+                index.remove(document[field], document_id)
 
-    def get_documents(
-        self, database_name: str, collection_name: str, filter_: dict
+    def _query(
+            self,
+            database_name: str,
+            collection_name: str,
+            filter_: dict,
     ) -> ReadInstructions:
+        if len(filter_) > 1:
+            raise ValueError("Can't handle filter with multiple expressions use query instead")
+
+        field, expression = list(filter_.items())[0]
+
+        # {"name": "mosh"} -> {"name": {"$eq": "mosh"}}
+        if not isinstance(expression, dict):
+            expression = {field: {"$eq": expression}}
+
         have_collection_indexes = (
-            database_name in self._indexes
-            and collection_name in self._indexes[database_name]
+                database_name in self._indexes
+                and collection_name in self._indexes[database_name]
         )
-        ids_set = None
 
-        for field, expression in filter_.items():
+        if (
+            not have_collection_indexes
+            or field not in self._indexes[database_name][collection_name]
+        ):
             if field == "_id" and isinstance(expression, ObjectId):
-                ids_set = set()
-                ids_set.add(expression)
-                continue
-
-            if (
-                not have_collection_indexes
-                or field not in self._indexes[database_name][collection_name]
-            ):
-                continue
-
-            index = self._indexes[database_name][collection_name][field]
-            index_values = [item[0] for item in index]
-
-            if not isinstance(expression, dict):
-                expression = {field: {"$eq": expression}}
-
-            for operator, value in expression.items():
-                if operator not in [
-                    "$gt",
-                    "$gte",
-                    "$eq",
-                    "$ne",
-                    "$lt",
-                    "$lte",
-                    "$exists",
-                ]:
-                    continue
-
-                ids = None
-
-                if operator == "$gt":
-                    i = bisect_right(index_values, value)
-                    ids = {value_id[1] for value_id in index[i:]}
-
-                if operator == "$gte":
-                    i = bisect_left(index_values, value)
-                    ids = {value_id[1] for value_id in index[i:]}
-
-                if operator == "$eq":
-                    s = bisect_left(index_values, value)
-                    e = bisect_right(index_values, value)
-                    if items := index[s:e]:
-                        ids = {value_id[1] for value_id in items}
-                    else:
-                        ids = set()
-
-                if operator == "$ne":
-                    s = bisect_left(index_values, value)
-                    e = bisect_right(index_values, value)
-                    si = index[:s]
-                    ei = index[e:]
-                    items = si + ei
-                    if items:
-                        ids = {value_id[1] for value_id in items}
-                    else:
-                        ids = set()
-
-                if operator == "$lt":
-                    i = bisect_left(index_values, value)
-                    ids = {value_id[1] for value_id in index[:i]}
-
-                if operator == "$lte":
-                    i = bisect_right(index_values, value)
-                    ids = {value_id[1] for value_id in index[:i]}
-
-                if operator == "$exists" and value:
-                    ids = {value_id[1] for value_id in index}
-
-                if ids is not None and ids_set is None:
-                    ids_set = ids
-                elif ids is not None:
-                    ids_set.intersection_update(ids)
-
-        if ids_set is None:
+                return ReadInstructions(indexes={self._root_index[expression],})
             return ReadInstructions(offset=0)
 
-        if not ids_set:
+        index = self._indexes[database_name][collection_name][field]
+        operation, value = list(expression.items())[0]
+        ids = index.query(operation, value)
+
+        if ids is None:
+            return ReadInstructions(offset=0)
+
+        if not ids:
             read_instructions = ReadInstructions(offset=0)
             read_instructions.end()
             return read_instructions
 
-        return ReadInstructions(indexes={self._root_index[id_] for id_ in ids_set})
+        return ReadInstructions(indexes={self._root_index[id_] for id_ in ids})

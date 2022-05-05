@@ -4,7 +4,7 @@ import contextlib
 
 from pymongolite.exceptions import MissingDatabaseName
 from pymongolite.database import Database
-from pymongolite.command import COMMANDS, Command
+from pymongolite.backend.command import COMMANDS, Command
 from pymongolite.backend.session import Session
 
 
