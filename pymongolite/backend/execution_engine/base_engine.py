@@ -1,8 +1,8 @@
 from typing import List
 from abc import ABC, abstractmethod
 
-from ..storage_engine.base_engine import BaseEngine as BaseStorgeEngine
-from ..indexing_engine.base_engine import BaseEngine as BaseIndexingEngine
+from pymongolite.backend.storage_engine.base_engine import BaseEngine as BaseStorgeEngine
+from pymongolite.backend.indexing_engine.base_engine import BaseEngine as BaseIndexingEngine
 
 
 class BaseEngine(ABC):

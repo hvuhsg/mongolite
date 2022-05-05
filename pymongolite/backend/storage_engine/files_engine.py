@@ -17,7 +17,7 @@ from pymongolite.backend.exceptions import (
 from pymongolite.backend.document import Document
 from pymongolite.backend.storage_engine.base_engine import BaseEngine
 from pymongolite.backend.storage_engine.insert_instruction import InsertInstructions
-from pymongolite.backend.storage_engine.read_instructions import ReadInstructions
+from pymongolite.backend.read_instructions import ReadInstructions
 from pymongolite.backend.storage_engine.update_instructions import UpdateInstructions
 
 
@@ -171,6 +171,9 @@ class FilesEngine(BaseEngine):
                     if line == "":
                         read_instructions.end()
                         break
+
+                    if document_index in read_instructions.exclude_indexes:
+                        continue
 
                     # Deleted document
                     if self._is_line_marked_as_deleted(line):
