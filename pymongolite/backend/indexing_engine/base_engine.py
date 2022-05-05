@@ -5,13 +5,16 @@ from ..storage_engine.read_instructions import ReadInstructions
 
 
 class BaseEngine(ABC):
-
     @abstractmethod
-    def create_index(self, database_name: str, collection_name: str, index: dict) -> bool:
+    def create_index(
+        self, database_name: str, collection_name: str, index: dict
+    ) -> bool:
         raise NotImplementedError
 
     @abstractmethod
-    def delete_index(self, database_name: str, collection_name: str, index_id: str) -> bool:
+    def delete_index(
+        self, database_name: str, collection_name: str, index_id: str
+    ) -> bool:
         raise NotImplementedError
 
     @abstractmethod
@@ -19,13 +22,22 @@ class BaseEngine(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def insert_documents(self, database_name: str, collection_name: str, documents: List[Tuple[dict, Any]]):
+    def insert_documents(
+        self,
+        database_name: str,
+        collection_name: str,
+        documents: List[Tuple[dict, Any]],
+    ):
         raise NotImplementedError
 
     @abstractmethod
-    def delete_documents(self, database_name: str, collection_name: str, documents: List[dict]):
+    def delete_documents(
+        self, database_name: str, collection_name: str, documents: List[dict]
+    ):
         raise NotImplementedError
 
     @abstractmethod
-    def get_documents(self, database_name: str, collection_name: str, filter_: dict) -> ReadInstructions:
+    def get_documents(
+        self, database_name: str, collection_name: str, filter_: dict
+    ) -> ReadInstructions:
         raise NotImplementedError

@@ -17,8 +17,7 @@ class Session:
         self._storage_engine = FilesEngine(self.__dirpath, **kwargs)
         self._indexing_engine = V1Engine()
         self._execution_engine = ChunkedEngine(
-            storage_engine=self._storage_engine,
-            indexing_engine=self._indexing_engine
+            storage_engine=self._storage_engine, indexing_engine=self._indexing_engine
         )
         self.__lock = RLock()
         self._closed = False

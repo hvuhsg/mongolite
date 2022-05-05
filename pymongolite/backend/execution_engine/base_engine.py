@@ -6,7 +6,11 @@ from ..indexing_engine.base_engine import BaseEngine as BaseIndexingEngine
 
 
 class BaseEngine(ABC):
-    def __init__(self, storage_engine: BaseStorgeEngine, indexing_engine: BaseIndexingEngine = None):
+    def __init__(
+        self,
+        storage_engine: BaseStorgeEngine,
+        indexing_engine: BaseIndexingEngine = None,
+    ):
         self._storage_engine = storage_engine
 
         self._indexing_engine = indexing_engine
@@ -81,7 +85,9 @@ class BaseEngine(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def delete_index(self, database_name: str, collection_name: str, index_id: str) -> bool:
+    def delete_index(
+        self, database_name: str, collection_name: str, index_id: str
+    ) -> bool:
         raise NotImplementedError
 
     @abstractmethod

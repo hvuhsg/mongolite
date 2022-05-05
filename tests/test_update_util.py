@@ -29,18 +29,16 @@ def test_add_to_set():
 def test_add_to_set_list():
     doc = {"a": [1]}
 
-    assert update_document_with_override(
-        doc,
-        {"$addToSet": {"a": [2, 3]}}
-    ) == {"a": [1, [2, 3]]}
+    assert update_document_with_override(doc, {"$addToSet": {"a": [2, 3]}}) == {
+        "a": [1, [2, 3]]
+    }
 
 
 def test_add_to_set_each():
     doc = {"a": [1]}
 
     assert update_document_with_override(
-        doc,
-        {"$addToSet": {"a": {"$each": [2, 3, 3]}}}
+        doc, {"$addToSet": {"a": {"$each": [2, 3, 3]}}}
     ) == {"a": [1, 2, 3]}
 
 
@@ -57,9 +55,11 @@ def test_pull_stay_the_same():
 
 
 def test_pull_condition():
-    doc = {"a": [{'b': 1}, {'b': 2}]}
+    doc = {"a": [{"b": 1}, {"b": 2}]}
 
-    assert update_document_with_override(doc, {"$pull": {"a": {'b': 1}}}) == {"a": [{"b": 2}]}
+    assert update_document_with_override(doc, {"$pull": {"a": {"b": 1}}}) == {
+        "a": [{"b": 2}]
+    }
 
 
 def test_push():
@@ -72,8 +72,7 @@ def test_push_each():
     doc = {"a": [0]}
 
     assert update_document_with_override(
-        doc,
-        {"$push": {"a": {"$each": [1, 2, 3]}}}
+        doc, {"$push": {"a": {"$each": [1, 2, 3]}}}
     ) == {"a": [0, 1, 2, 3]}
 
 
@@ -81,15 +80,13 @@ def test_push_sort():
     doc = {"a": [0]}
 
     assert update_document_with_override(
-        doc,
-        {"$push": {"a": {"$each": [3, 1, 2], "$sort": 1}}}
+        doc, {"$push": {"a": {"$each": [3, 1, 2], "$sort": 1}}}
     ) == {"a": [0, 1, 2, 3]}
 
     doc = {"a": [0]}
 
     assert update_document_with_override(
-        doc,
-        {"$push": {"a": {"$each": [3, 1, 2], "$sort": -1}}}
+        doc, {"$push": {"a": {"$each": [3, 1, 2], "$sort": -1}}}
     ) == {"a": [3, 2, 1, 0]}
 
 
@@ -97,8 +94,7 @@ def test_push_sort_slice():
     doc = {"a": [0]}
 
     assert update_document_with_override(
-        doc,
-        {"$push": {"a": {"$each": [1, 2, 3], "$slice": 2}}}
+        doc, {"$push": {"a": {"$each": [1, 2, 3], "$slice": 2}}}
     ) == {"a": [0, 1]}
 
 
