@@ -192,14 +192,17 @@ class FilesEngine(BaseEngine):
         database_name: str,
         collection_name: str,
         update_instructions: UpdateInstructions,
-    ):
+    ) -> List[Document]:
         collection_path = self._get_collection_path(
             database_name=database_name, collection_name=collection_name
         )
+        documents = []
         with open(collection_path, "r+") as file:
             for index, updated_document in update_instructions:
                 self._mark_document_as_deleted(file, index)
-                self._insert_document(file, updated_document)
+                lookup_key = self._insert_document(file, updated_document)
+                documents.append(Document(lookup_key=lookup_key, data=updated_document))
+        return documents
 
     def delete_documents(
         self,

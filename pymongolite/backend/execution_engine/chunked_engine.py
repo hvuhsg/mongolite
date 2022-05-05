@@ -187,89 +187,89 @@ class ChunkedEngine(BaseEngine):
         database_name: str,
         collection_name: str,
         filter_: dict,
-        override: dict,
+        override: dict = None,
+        replacement: dict = None,
         many: bool = True,
     ):
-        for documents in grouper(
-            self._chunk_size,
-            self._iter_documents_filtered(database_name, collection_name, filter_),
+        if override is None and replacement is None:
+            raise ValueError("Update requires one of override or replacement")
+
+        for documents_chunk in self._filtered_chunks(
+            database_name=database_name,
+            collection_name=collection_name,
+            filter_=filter_,
+            many=many,
         ):
             documents_updated = {}
+            old_updated_documents = []
+            new_updated_documents = []
 
-            for document in documents:
-                updated_document = update_document_with_override(
-                    document.data, override
-                )
+            for document in documents_chunk:
+                if override:
+                    updated_document = update_document_with_override(
+                        document.data, override
+                    )
+                else:
+                    updated_document = replacement
+                    updated_document["_id"] = ObjectId()
+
                 updated_document["_id"] = str(updated_document["_id"])
 
                 # Document was updated
                 if updated_document != document.data:
+                    old_updated_documents.append(document.data)
+                    new_updated_documents.append(updated_document)
                     documents_updated[document.lookup_key] = updated_document
 
-                    if not many:
-                        break
-
             if documents_updated:
-                self._storage_engine.update_documents(
+                updated_documents = self._storage_engine.update_documents(
                     database_name=database_name,
                     collection_name=collection_name,
                     update_instructions=UpdateInstructions(
                         overwrites=documents_updated
                     ),
                 )
+            else:
+                continue
 
-            if not many:
-                break
+            if self._is_indexing_engine_used:
+                self._indexing_engine.delete_documents(
+                    database_name, collection_name, old_updated_documents
+                )
+                self._indexing_engine.insert_documents(
+                    database_name,
+                    collection_name,
+                    [(document.data, document.lookup_key) for document in updated_documents]
+                )
 
     def replace(
-        self,
-        database_name: str,
-        collection_name: str,
-        filter_: dict,
-        replacement: dict,
-        many: bool = True,
+            self,
+            database_name: str,
+            collection_name: str,
+            filter_: dict,
+            replacement: dict = None,
+            many: bool = True,
     ):
-        for documents in grouper(
-            self._chunk_size,
-            self._iter_documents_filtered(database_name, collection_name, filter_),
-        ):
-            documents_updated = {}
-
-            for document in documents:
-                updated_document = replacement
-                updated_document["_id"] = str(ObjectId())
-
-                # Document was updated
-                if updated_document != document.data:
-                    documents_updated[document.lookup_key] = updated_document
-
-                    if not many:
-                        break
-
-            if documents_updated:
-                self._storage_engine.update_documents(
-                    database_name=database_name,
-                    collection_name=collection_name,
-                    update_instructions=UpdateInstructions(
-                        overwrites=documents_updated
-                    ),
-                )
-
-            if not many:
-                break
+        return self.update(
+            database_name=database_name,
+            collection_name=collection_name,
+            filter_=filter_,
+            replacement=replacement,
+            many=many
+        )
 
     def delete(
         self, database_name: str, collection_name: str, filter_: dict, many: bool = True
     ):
 
-        for documents in grouper(
-            self._chunk_size,
-            self._iter_documents_filtered(database_name, collection_name, filter_),
+        for documents_chunk in self._filtered_chunks(
+            database_name=database_name,
+            collection_name=collection_name,
+            filter_=filter_,
+            many=many,
         ):
-            if not many:
-                documents = documents[:1]
-
-            documents_indexes = {document.lookup_key for document in documents}
+            documents_indexes = {document.lookup_key for document in documents_chunk}
+            documents_data = [document.data for document in documents_chunk]
 
             self._storage_engine.delete_documents(
                 database_name=database_name,
@@ -277,13 +277,10 @@ class ChunkedEngine(BaseEngine):
                 delete_instructions=ReadInstructions(indexes=documents_indexes),
             )
 
-            if not self._is_indexing_engine_used:
+            if self._is_indexing_engine_used:
                 self._indexing_engine.delete_documents(
-                    database_name, collection_name, documents
+                    database_name, collection_name, documents_data
                 )
-
-            if not many:
-                break
 
     def insert(self, database_name: str, collection_name: str, documents: List[dict]):
         inserted_object_ids = []
@@ -431,3 +428,14 @@ class ChunkedEngine(BaseEngine):
                     yield document
             else:
                 yield document
+
+    def _filtered_chunks(self, database_name: str, collection_name: str, filter_: dict, many: bool):
+        for documents_chunk in grouper(
+            self._chunk_size,
+            self._iter_documents_filtered(database_name, collection_name, filter_),
+        ):
+            if not many:
+                yield documents_chunk[:1]
+                break
+
+            yield documents_chunk

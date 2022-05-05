@@ -42,7 +42,7 @@ class BaseEngine(ABC):
         database_name: str,
         collection_name: str,
         update_instructions: UpdateInstructions,
-    ):
+    ) -> List[Any]:
         raise NotImplementedError
 
     @abstractmethod
