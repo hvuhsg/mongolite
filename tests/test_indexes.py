@@ -16,7 +16,7 @@ def collection():
 
 
 def test_index_creation(collection):
-    index_id = collection.create_index({'age': 1})
+    index_id = collection.create_index({"age": 1})
 
     assert index_id is not None
 
@@ -38,7 +38,7 @@ def test_index_on_existing_data(collection):
     collection.insert_one({"name": "mosh", "age": 11})
     collection.insert_one({"name": "nina", "age": 25})
 
-    collection.create_index({'age': 1})
+    collection.create_index({"age": 1})
 
     results = list(collection.find({"age": {"$gt": 20}}, {"_id": 0}))
 
@@ -48,22 +48,24 @@ def test_index_on_existing_data(collection):
 
 
 def test_multiple_indexes(collection):
-    collection.create_index({'age': 1})
-    collection.create_index({'name': 1})
+    collection.create_index({"age": 1})
+    collection.create_index({"name": 1})
 
     collection.insert_one({"name": "jon", "age": 22})
     collection.insert_one({"name": "dave", "age": 15})
     collection.insert_one({"name": "mosh", "age": 11})
     collection.insert_one({"name": "nina", "age": 25})
 
-    results = list(collection.find({"age": {"$gt": 20}, "name": {"$gt": "mosh"}}, {"_id": 0}))
+    results = list(
+        collection.find({"age": {"$gt": 20}, "name": {"$gt": "mosh"}}, {"_id": 0})
+    )
 
     assert len(results) == 1
     assert {"name": "nina", "age": 25} in results
 
 
 def test_empty_result_index(collection):
-    collection.create_index({'age': 1})
+    collection.create_index({"age": 1})
 
     collection.insert_one({"name": "jon", "age": 22})
     collection.insert_one({"name": "dave", "age": 15})
@@ -76,7 +78,7 @@ def test_empty_result_index(collection):
 
 
 def test_simple_query(collection):
-    collection.create_index({'age': 1})
+    collection.create_index({"age": 1})
 
     collection.insert_one({"name": "jon", "age": 22})
     collection.insert_one({"name": "dave", "age": 15})
@@ -101,7 +103,7 @@ def test_get_index_list(collection):
 
 
 def test_delete_document_from_index(collection):
-    collection.create_index({'age': 1})
+    collection.create_index({"age": 1})
 
     collection.insert_one({"name": "jon", "age": 22})
     collection.insert_one({"name": "dave", "age": 15})
@@ -111,11 +113,13 @@ def test_delete_document_from_index(collection):
     collection.delete_many({"age": {"$gt": 15}})
 
     assert list(collection.find({"age": {"$eq": 22}}, {"_id": 0})) == []
-    assert list(collection.find({"age": {"$eq": 15}}, {"_id": 0})) == [{'age': 15, 'name': 'dave'}]
+    assert list(collection.find({"age": {"$eq": 15}}, {"_id": 0})) == [
+        {"age": 15, "name": "dave"}
+    ]
 
 
 def test_exists_false_index_query(collection):
-    collection.create_index({'age': 1})
+    collection.create_index({"age": 1})
 
     collection.insert_one({"name": "jon", "age": 22})
     collection.insert_one({"name": "dave", "age": 15})
@@ -123,4 +127,22 @@ def test_exists_false_index_query(collection):
     collection.insert_one({"name": "nina", "age": 25})
     collection.insert_one({"name": "yoyo"})
 
-    assert collection.find_one({"age": {"$exists": False}}, {"_id": 0}) == {"name": "yoyo"}
+    assert collection.find_one({"age": {"$exists": False}}, {"_id": 0}) == {
+        "name": "yoyo"
+    }
+
+
+def test_find_by_object_id(collection):
+    collection.insert_one({"name": "jon", "age": 22})
+    object_id = collection.insert_one({"name": "dave", "age": 15})
+    collection.insert_one({"name": "mosh", "age": 11})
+    collection.insert_one({"name": "nina", "age": 25})
+    collection.insert_one({"name": "yoyo"})
+
+    assert list(collection.find({"_id": object_id}, {"_id": 0})) == [
+        {"name": "dave", "age": 15}
+    ]
+    assert collection.find_one({"_id": object_id}, {"_id": 0}) == {
+        "name": "dave",
+        "age": 15,
+    }

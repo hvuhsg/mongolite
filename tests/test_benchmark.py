@@ -17,29 +17,29 @@ def collection():
 
 def test_insert_one(benchmark, collection):
     def bench():
-        collection.insert_one({'a': 1})
+        collection.insert_one({"a": 1})
 
     benchmark(bench)
 
 
 def test_insert_many(benchmark, collection):
     def bench():
-        collection.insert_many([{'a': 1}]*1000)
+        collection.insert_many([{"a": 1}] * 1000)
 
     benchmark(bench)
 
 
 def test_delete_one(benchmark, collection):
-    collection.insert_one({'a': 1})
+    collection.insert_one({"a": 1})
 
     def bench():
-        collection.delete_one({'a': 1})
+        collection.delete_one({"a": 1})
 
     benchmark(bench)
 
 
 def test_delete_many(benchmark, collection):
-    collection.insert_many([{'a': 1}]*1000)
+    collection.insert_many([{"a": 1}] * 1000)
 
     def bench():
         collection.delete_many({})
@@ -48,34 +48,34 @@ def test_delete_many(benchmark, collection):
 
 
 def test_update_one(benchmark, collection):
-    collection.insert_many([{'a': 1}] * 1000)
+    collection.insert_many([{"a": 1}] * 1000)
 
     def bench():
-        collection.update_one({}, {"$set": {'b': 2}})
+        collection.update_one({}, {"$set": {"b": 2}})
 
     benchmark(bench)
 
 
 def test_update_many(benchmark, collection):
-    collection.insert_many([{'a': 1}] * 1000)
+    collection.insert_many([{"a": 1}] * 1000)
 
     def bench():
-        collection.update_many({}, {"$set": {'b': 2}})
+        collection.update_many({}, {"$set": {"b": 2}})
 
     benchmark(bench)
 
 
 def test_find_one(benchmark, collection):
-    collection.insert_many([{'a': 1}] * 1000)
+    collection.insert_many([{"a": 1}] * 1000)
 
     def bench():
-        collection.update_one({}, {"$set": {'b': 2}})
+        collection.update_one({}, {"$set": {"b": 2}})
 
     benchmark(bench)
 
 
 def test_find_many(benchmark, collection):
-    collection.insert_many([{'a': 1}] * 1000)
+    collection.insert_many([{"a": 1}] * 1000)
 
     def bench():
         collection.find({})

@@ -44,7 +44,7 @@ def test_insert_many(collection):
 def test_find_one(collection):
     collection.insert_one({"a": 1, "b": 2})
 
-    doc = collection.find_one({"a": 1}, {'_id': 0})
+    doc = collection.find_one({"a": 1}, {"_id": 0})
 
     assert doc == {"a": 1, "b": 2}
 
@@ -70,7 +70,7 @@ def test_find_with_fields(collection):
     doc = collection.find_one({}, {"a": 1})
     assert doc == {"a": 10}
 
-    doc = collection.find_one({}, {"a": 0, '_id': 0})
+    doc = collection.find_one({}, {"a": 0, "_id": 0})
     assert doc == {"b": 2}
 
 
@@ -80,12 +80,12 @@ def test_update_one(collection):
 
     collection.update_one({}, {"$set": {"b": 2}})
 
-    doc = collection.find_one({"b": 2}, {'_id': 0})
+    doc = collection.find_one({"b": 2}, {"_id": 0})
     assert doc == {"a": 1, "b": 2}
 
     collection.update_one({"a": 1}, {"$inc": {"a": 9}})
 
-    doc = collection.find_one({"a": 10}, {'_id': 0})
+    doc = collection.find_one({"a": 10}, {"_id": 0})
     assert doc == {"a": 10, "b": 2}
 
 

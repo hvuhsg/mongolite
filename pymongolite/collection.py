@@ -103,7 +103,7 @@ class Collection:
                     collection_name=self.__name,
                     documents=[doc],
                 ),
-            )
+            )[0]
 
     def insert_many(self, docs: List[Dict]):
         with self.__database._open_session() as session:

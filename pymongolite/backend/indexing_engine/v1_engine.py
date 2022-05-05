@@ -7,6 +7,7 @@ from blist import sortedlist
 from .base_engine import BaseEngine
 from .index_metadata import IndexMetadata
 from ..storage_engine.read_instructions import ReadInstructions
+from ..objectid import ObjectId
 
 
 class V1Engine(BaseEngine):
@@ -15,7 +16,9 @@ class V1Engine(BaseEngine):
         self._indexes = {}  # {db_name: {collection_name: {index_id: index}}
         self._indexes_meta = {}  # {index_id: index_metadata}
 
-    def create_index(self, database_name: str, collection_name: str, index: dict) -> Union[UUID, None]:
+    def create_index(
+        self, database_name: str, collection_name: str, index: dict
+    ) -> Union[UUID, None]:
         if len(index) > 1:
             raise ValueError("Index must be with one pair of key and value")
 
@@ -30,13 +33,22 @@ class V1Engine(BaseEngine):
 
         if field not in self._indexes[database_name][collection_name]:
             index_uuid = uuid4()
-            self._indexes[database_name][collection_name][field] = sortedlist(key=lambda t: t[0])
-            self._indexes_meta[index_uuid] = IndexMetadata(field=field, type_=index_type)
+            self._indexes[database_name][collection_name][field] = sortedlist(
+                key=lambda t: t[0]
+            )
+            self._indexes_meta[index_uuid] = IndexMetadata(
+                field=field, type_=index_type
+            )
 
         return index_uuid
 
-    def delete_index(self, database_name: str, collection_name: str, index_uuid: str) -> bool:
-        if database_name not in self._indexes or collection_name not in self._indexes[database_name]:
+    def delete_index(
+        self, database_name: str, collection_name: str, index_uuid: str
+    ) -> bool:
+        if (
+            database_name not in self._indexes
+            or collection_name not in self._indexes[database_name]
+        ):
             return False
 
         index_metadata: IndexMetadata = self._indexes_meta.pop(index_uuid)
@@ -49,7 +61,10 @@ class V1Engine(BaseEngine):
         return True
 
     def get_indexes_list(self, database_name: str, collection_name: str) -> list:
-        if database_name not in self._indexes or collection_name not in self._indexes[database_name]:
+        if (
+            database_name not in self._indexes
+            or collection_name not in self._indexes[database_name]
+        ):
             return []
 
         return [
@@ -57,7 +72,9 @@ class V1Engine(BaseEngine):
                 "id": index_uuid,
                 "field": index_metadata.field,
                 "type": index_metadata.type_,
-                "size": len(self._indexes[database_name][collection_name][index_metadata.field])
+                "size": len(
+                    self._indexes[database_name][collection_name][index_metadata.field]
+                ),
             }
             for index_uuid, index_metadata in self._indexes_meta.items()
         ]
@@ -68,41 +85,74 @@ class V1Engine(BaseEngine):
     def _remove_from_root_index(self, document_id: str) -> bool:
         return self._root_index.pop(document_id, None) is not None
 
-    def insert_documents(self, database_name: str, collection_name: str, documents: List[Tuple[dict, int]]):
-        if database_name not in self._indexes or collection_name not in self._indexes[database_name]:
+    def insert_documents(
+        self,
+        database_name: str,
+        collection_name: str,
+        documents: List[Tuple[dict, int]],
+    ):
+        for document, lookup_key in documents:
+            document_id = document["_id"]
+            self._insert_to_root_index(document_id, lookup_key)
+
+        if (
+            database_name not in self._indexes
+            or collection_name not in self._indexes[database_name]
+        ):
             return
 
         for document, lookup_key in documents:
-            document_id = document['_id']
+            document_id = document["_id"]
 
             for field in document.keys():
-                if (index := self._indexes[database_name][collection_name].get(field, None)) is not None:
+                if (
+                    index := self._indexes[database_name][collection_name].get(
+                        field, None
+                    )
+                ) is not None:
                     index.add((document[field], document_id))
-                    self._insert_to_root_index(document_id, lookup_key)
 
-    def delete_documents(self, database_name: str, collection_name: str, documents: List[dict]):
-        if database_name not in self._indexes or collection_name not in self._indexes[database_name]:
+    def delete_documents(
+        self, database_name: str, collection_name: str, documents: List[dict]
+    ):
+        for document in documents:
+            document_id = document["_id"]
+            self._remove_from_root_index(document_id)
+
+        if (
+            database_name not in self._indexes
+            or collection_name not in self._indexes[database_name]
+        ):
             return
 
         fields_with_indexes = set(self._indexes[database_name][collection_name].keys())
 
         for document in documents:
-            document_id = document['_id']
+            document_id = document["_id"]
 
             for field in fields_with_indexes.intersection(set(document.keys())):
                 index = self._indexes[database_name][collection_name][field]
                 index.remove((document[field], document_id))
 
-            self._remove_from_root_index(document_id)
-
-    def get_documents(self, database_name: str, collection_name: str, filter_: dict) -> ReadInstructions:
-        if database_name not in self._indexes or collection_name not in self._indexes[database_name]:
-            return ReadInstructions(offset=0)
-
+    def get_documents(
+        self, database_name: str, collection_name: str, filter_: dict
+    ) -> ReadInstructions:
+        have_collection_indexes = (
+            database_name in self._indexes
+            and collection_name in self._indexes[database_name]
+        )
         ids_set = None
 
         for field, expression in filter_.items():
-            if field not in self._indexes[database_name][collection_name]:
+            if field == "_id" and isinstance(expression, ObjectId):
+                ids_set = set()
+                ids_set.add(expression)
+                continue
+
+            if (
+                not have_collection_indexes
+                or field not in self._indexes[database_name][collection_name]
+            ):
                 continue
 
             index = self._indexes[database_name][collection_name][field]
@@ -112,7 +162,15 @@ class V1Engine(BaseEngine):
                 expression = {field: {"$eq": expression}}
 
             for operator, value in expression.items():
-                if operator not in ['$gt', '$gte', '$eq', '$ne', '$lt', '$lte', '$exists']:
+                if operator not in [
+                    "$gt",
+                    "$gte",
+                    "$eq",
+                    "$ne",
+                    "$lt",
+                    "$lte",
+                    "$exists",
+                ]:
                     continue
 
                 ids = None

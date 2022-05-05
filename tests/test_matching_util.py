@@ -63,17 +63,41 @@ def test_not():
 
 
 def test_and():
-    assert document_filter_match({"a": 1}, {"a": {"$and": [{"$gt": 0}, {"$lt": 2}]}}) is True
-    assert document_filter_match({"a": 1}, {"a": {"$and": [{"$gt": 0}, {"$eq": 0}]}}) is False
+    assert (
+        document_filter_match({"a": 1}, {"a": {"$and": [{"$gt": 0}, {"$lt": 2}]}})
+        is True
+    )
+    assert (
+        document_filter_match({"a": 1}, {"a": {"$and": [{"$gt": 0}, {"$eq": 0}]}})
+        is False
+    )
 
 
 def test_or():
-    assert document_filter_match({"a": 1}, {"a": {"$or": [{"$gt": 2}, {"$lt": 0}]}}) is False
-    assert document_filter_match({"a": 1}, {"a": {"$or": [{"$gt": 0}, {"$eq": 1}]}}) is True
-    assert document_filter_match({"a": 1}, {"a": {"$or": [{"$gt": 0}, {"$eq": 0}]}}) is True
+    assert (
+        document_filter_match({"a": 1}, {"a": {"$or": [{"$gt": 2}, {"$lt": 0}]}})
+        is False
+    )
+    assert (
+        document_filter_match({"a": 1}, {"a": {"$or": [{"$gt": 0}, {"$eq": 1}]}})
+        is True
+    )
+    assert (
+        document_filter_match({"a": 1}, {"a": {"$or": [{"$gt": 0}, {"$eq": 0}]}})
+        is True
+    )
 
 
 def test_nor():
-    assert document_filter_match({"a": 1}, {"a": {"$nor": [{"$gt": 2}, {"$lt": 0}]}}) is True
-    assert document_filter_match({"a": 1}, {"a": {"$nor": [{"$gt": 0}, {"$eq": 1}]}}) is False
-    assert document_filter_match({"a": 1}, {"a": {"$nor": [{"$gt": 0}, {"$eq": 0}]}}) is False
+    assert (
+        document_filter_match({"a": 1}, {"a": {"$nor": [{"$gt": 2}, {"$lt": 0}]}})
+        is True
+    )
+    assert (
+        document_filter_match({"a": 1}, {"a": {"$nor": [{"$gt": 0}, {"$eq": 1}]}})
+        is False
+    )
+    assert (
+        document_filter_match({"a": 1}, {"a": {"$nor": [{"$gt": 0}, {"$eq": 0}]}})
+        is False
+    )

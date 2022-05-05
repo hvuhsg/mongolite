@@ -22,10 +22,10 @@ DEFAULT_CHUNK_SIZE = 5 * 1024
 
 class ChunkedEngine(BaseEngine):
     def __init__(
-            self,
-            storage_engine: BaseStorageEngine,
-            indexing_engine: BaseIndexingEngine = None,
-            chunk_size: int = DEFAULT_CHUNK_SIZE,
+        self,
+        storage_engine: BaseStorageEngine,
+        indexing_engine: BaseIndexingEngine = None,
+        chunk_size: int = DEFAULT_CHUNK_SIZE,
     ):
         self.__lock = RLock()
         self._closed = False
@@ -191,7 +191,7 @@ class ChunkedEngine(BaseEngine):
                 updated_document = update_document_with_override(
                     document.data, override
                 )
-                updated_document['_id'] = str(updated_document['_id'])
+                updated_document["_id"] = str(updated_document["_id"])
 
                 # Document was updated
                 if updated_document != document.data:
@@ -228,7 +228,7 @@ class ChunkedEngine(BaseEngine):
 
             for document in documents:
                 updated_document = replacement
-                updated_document['_id'] = str(ObjectId())
+                updated_document["_id"] = str(ObjectId())
 
                 # Document was updated
                 if updated_document != document.data:
@@ -269,14 +269,20 @@ class ChunkedEngine(BaseEngine):
             )
 
             if not self._is_indexing_engine_used:
-                self._indexing_engine.delete_documents(database_name, collection_name, documents)
+                self._indexing_engine.delete_documents(
+                    database_name, collection_name, documents
+                )
 
             if not many:
                 break
 
     def insert(self, database_name: str, collection_name: str, documents: List[dict]):
+        inserted_object_ids = []
+
         for document in documents:
-            document['_id'] = str(ObjectId())
+            oid = ObjectId()
+            document["_id"] = str(oid)
+            inserted_object_ids.append(oid)
 
         documents_lookup_keys = self._storage_engine.insert_documents(
             database_name=database_name,
@@ -291,14 +297,18 @@ class ChunkedEngine(BaseEngine):
                 documents=[
                     (document, lookup_key)
                     for document, lookup_key in zip(documents, documents_lookup_keys)
-                ]
+                ],
             )
+
+        return inserted_object_ids
 
     def create_index(self, database_name: str, collection_name: str, index: dict):
         if not self._is_indexing_engine_used:
             return
 
-        index_uuid = self._indexing_engine.create_index(database_name, collection_name, index)
+        index_uuid = self._indexing_engine.create_index(
+            database_name, collection_name, index
+        )
         if index_uuid is None:
             return False
 
@@ -306,19 +316,27 @@ class ChunkedEngine(BaseEngine):
         filter_ = {index_field: {"$exists": True}}
 
         for documents in grouper(
-                self._chunk_size,
-                self._iter_documents_filtered(database_name, collection_name, filter_, use_indexes=False),
+            self._chunk_size,
+            self._iter_documents_filtered(
+                database_name, collection_name, filter_, use_indexes=False
+            ),
         ):
             documents = [(document.data, document.lookup_key) for document in documents]
-            self._indexing_engine.insert_documents(database_name, collection_name, documents=documents)
+            self._indexing_engine.insert_documents(
+                database_name, collection_name, documents=documents
+            )
 
         return index_uuid
 
-    def delete_index(self, database_name: str, collection_name: str, index_id: str) -> bool:
+    def delete_index(
+        self, database_name: str, collection_name: str, index_id: str
+    ) -> bool:
         if not self._is_indexing_engine_used:
             return False
 
-        return self._indexing_engine.delete_index(database_name, collection_name, index_id)
+        return self._indexing_engine.delete_index(
+            database_name, collection_name, index_id
+        )
 
     def get_indexes_list(self, database_name: str, collection_name: str) -> list:
         if not self._is_indexing_engine_used:
@@ -343,7 +361,9 @@ class ChunkedEngine(BaseEngine):
         if collection is None:
             raise CollectionIsRequired()
 
-    def _iter_read_documents(self, database: str, collection: str, read_instructions: ReadInstructions):
+    def _iter_read_documents(
+        self, database: str, collection: str, read_instructions: ReadInstructions
+    ):
         while not read_instructions.ended:
             documents = self._storage_engine.get_documents(
                 database_name=database,
@@ -355,21 +375,30 @@ class ChunkedEngine(BaseEngine):
                 break
 
             for document in documents:
-                document.data['_id'] = ObjectId(document.data['_id'])
+                document.data["_id"] = ObjectId(document.data["_id"])
                 yield document
 
-    def _iter_documents_filtered(self, database: str, collection: str, filter_: dict, use_indexes: bool = True):
+    def _iter_documents_filtered(
+        self, database: str, collection: str, filter_: dict, use_indexes: bool = True
+    ):
         read_instructions = ReadInstructions(offset=0, chunk_size=self._chunk_size)
-        is_simple_filter = len(set(filter_.keys()).intersection({"$or", "$and", "$nor", "$not"})) == 0
+        is_simple_filter = (
+            len(set(filter_.keys()).intersection({"$or", "$and", "$nor", "$not"})) == 0
+        )
 
-        if filter_ and self._is_indexing_engine_used and use_indexes and is_simple_filter:
+        if (
+            filter_
+            and self._is_indexing_engine_used
+            and use_indexes
+            and is_simple_filter
+        ):
             # TODO: support complex filters (including $or, $nor, $not, $and)
             read_instructions = self._indexing_engine.get_documents(
-                database_name=database,
-                collection_name=collection,
-                filter_=filter_
+                database_name=database, collection_name=collection, filter_=filter_
             )
 
-        for document in self._iter_read_documents(database, collection, read_instructions):
+        for document in self._iter_read_documents(
+            database, collection, read_instructions
+        ):
             if document_filter_match(document.data, filter_):
                 yield document
