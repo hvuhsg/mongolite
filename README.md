@@ -5,12 +5,13 @@ Lite mongodb engine in python
 
 ---
 
-```commandline
+```shell
 pip install pymongolite
 ```
 
 ## Examples
 
+#### simple 
 ```python
 from pymongolite import MongoClient
 
@@ -66,38 +67,43 @@ client.close()
 ## Support
 The goal of this project is to create sqlite version for mongodb
 
-For now the library is supporting:
-- insert_many / insert_one
-- update_many / update_one
-    - $set
-    - $unset
-    - $inc
-    - $addToSet
-      - $each
-    - $push
-      - $each
-      - $sort
-      - $slice
-    - $pull
-- find / find_one
-    - field matching
-    - $eq
-    - $ne
-    - $gt / $gte
-    - $lt / $lte
-    - $not
-    - $and
-    - $or
-    - $nor
-    - $exists
-    - $in
-    - $nin
-    - filter fields
-- replace_many / replace_one
-- create_collection
-- get_collection
-- drop_collection
-- create_database
-- drop_database
-- thread safety
-- replaceable storage engine
+### For now the library is supporting:
+#### actions:
+- database
+  - create_database
+  - get_database
+  - drop_database
+- collection
+  - create_collection
+  - get_collection
+  - drop_collection
+  - get_collection_names
+- index
+  - create_index
+  - delete_index
+  - get_indexes
+- document
+  - insert_many / insert_one
+  - update_many / update_one
+  - find / find_one
+  - replace_many / replace_one
+#### filtering ops:
+- field matching
+- $eq / $ne
+- $gt / $gte
+- $lt / $lte
+- $not
+- $and / $or / $nor
+- $exists
+- $in / $nin
+#### mutation ops:
+- $set
+- $unset
+- $inc
+- $addToSet
+  - $each
+- $push
+  - $each
+  - $sort
+  - $slice
+- $pull
