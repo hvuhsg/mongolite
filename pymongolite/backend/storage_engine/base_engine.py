@@ -1,9 +1,9 @@
 from typing import List, Any
 from abc import ABC, abstractmethod
 
-from .read_instructions import ReadInstructions
-from .update_instructions import UpdateInstructions
-from .insert_instruction import InsertInstructions
+from pymongolite.backend.read_instructions import ReadInstructions
+from pymongolite.backend.storage_engine.update_instructions import UpdateInstructions
+from pymongolite.backend.storage_engine.insert_instruction import InsertInstructions
 
 
 class BaseEngine(ABC):
@@ -42,7 +42,7 @@ class BaseEngine(ABC):
         database_name: str,
         collection_name: str,
         update_instructions: UpdateInstructions,
-    ):
+    ) -> List[Any]:
         raise NotImplementedError
 
     @abstractmethod

@@ -7,7 +7,7 @@ class Null:
 
 
 def is_condition(item) -> bool:
-    return type(item) is dict and next(iter(item.keys())).startswith("$")
+    return isinstance(item, dict) and next(iter(item.keys())).startswith("$")
 
 
 def document_filter_match(document: dict, filter: dict) -> bool:
@@ -16,13 +16,39 @@ def document_filter_match(document: dict, filter: dict) -> bool:
 
     for field, pattern in filter.items():
         pattern_is_condition = is_condition(pattern)
+        field_is_gate_condition = field.startswith("$")
         value = document.get(field, Null())
 
-        if not pattern_is_condition:
+        if not pattern_is_condition and not field_is_gate_condition:
             if value != pattern:
                 return False
             else:
                 continue
+
+        if field_is_gate_condition:
+            if field == "$and" and not all(
+                    map(
+                        lambda filter_: document_filter_match(document, filter_),
+                        pattern,
+                    )
+            ):
+                return False
+
+            if field == "$or" and not any(
+                    map(
+                        lambda filter_: document_filter_match(document, filter_),
+                        pattern,
+                    )
+            ):
+                return False
+
+            if field == "$nor" and any(
+                    map(
+                        lambda filter_: document_filter_match(document, filter_),
+                        pattern,
+                    )
+            ):
+                return False
 
         if "$eq" in pattern and value != pattern["$eq"]:
             return False
@@ -56,30 +82,6 @@ def document_filter_match(document: dict, filter: dict) -> bool:
 
         if "$not" in pattern and document_filter_match(
             document, {field: pattern["$not"]}
-        ):
-            return False
-
-        if "$and" in pattern and not all(
-            map(
-                lambda filter: document_filter_match(document, {field: filter}),
-                pattern["$and"],
-            )
-        ):
-            return False
-
-        if "$or" in pattern and not any(
-            map(
-                lambda filter: document_filter_match(document, {field: filter}),
-                pattern["$or"],
-            )
-        ):
-            return False
-
-        if "$nor" in pattern and any(
-            map(
-                lambda filter: document_filter_match(document, {field: filter}),
-                pattern["$nor"],
-            )
         ):
             return False
 
