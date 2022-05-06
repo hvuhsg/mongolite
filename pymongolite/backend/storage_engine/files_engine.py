@@ -38,14 +38,6 @@ class FilesEngine(BaseEngine):
         if not os.path.exists(self._root_path):
             os.mkdir(self._root_path)
 
-    def create_read_offset(self) -> str:
-        offset = str(uuid4())
-        self._offsets[offset] = 0
-        return offset
-
-    def delete_read_offset(self, offset_id: str) -> bool:
-        return self._offsets.pop(offset_id, None) is not None
-
     def _get_database_path(
         self, database_name: str, error_not_found: bool = False
     ) -> Path:
