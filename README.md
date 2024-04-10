@@ -1,8 +1,8 @@
 # mongolite 
 Lite mongodb engine in python  
 
-[![Run Tests](https://github.com/hvuhsg/mongolite/actions/workflows/test.yml/badge.svg)](https://github.com/hvuhsg/mongolite/actions/workflows/test.yml)  
-[![BringThemBack](https://badge.yehoyada.com/)](https://www.standwithus.com/)
+[![Run Tests](https://github.com/hvuhsg/mongolite/actions/workflows/test.yml/badge.svg)](https://github.com/hvuhsg/mongolite/actions/workflows/test.yml)
+[![BringThemBack](https://badge.yehoyada.com/)](https://www.standwithus.com/)  
 
 ---
 
