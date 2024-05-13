@@ -2,7 +2,7 @@ from typing import Union
 from bisect import bisect_left, bisect_right
 from itertools import chain
 
-from blist import sortedlist
+from sortedcontainers import SortedKeyList as sortedlist
 
 from pymongolite.backend.indexing_engine.base_index import BaseIndex
 
