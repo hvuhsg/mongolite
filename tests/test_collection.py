@@ -1,10 +1,11 @@
-import os
+import os, datetime
 import shutil
 
 import pytest
 
 from pymongolite import MongoClient
 
+type_test_list = ["a string", 1, 1.002, True, datetime.datetime.now(), ["1", "2", "3", 2, True], {"1": 2, "2": 2.3, "3": datetime.datetime.now(), "4": True}, None]
 
 @pytest.fixture(scope="function")
 def collection():
@@ -30,6 +31,19 @@ def test_insert(collection):
 
     assert data.startswith('{"a": true')
 
+@pytest.mark.parametrize("type_example", type_test_list, ids=[type(v) for v in type_test_list])
+def test_all_pymongo_supported_types(collection, type_example):
+    """Test all pymongo supported serialization/deserialization types per 
+    https://www.mongodb.com/docs/languages/python/pymongo-driver/upcoming/serialization/
+    """
+    collection.insert_one({"test_type": type_example})
+
+    doc = collection.find_one({})
+
+    type_out = doc["test_type"]
+
+    assert type(type_out) == type(type_example)
+    assert type_out == type_example
 
 def test_insert_many(collection):
     collection.insert_many([{"a": True}, {"b": False}])

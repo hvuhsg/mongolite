@@ -19,7 +19,7 @@ from pymongolite.backend.storage_engine.base_engine import BaseEngine
 from pymongolite.backend.storage_engine.insert_instruction import InsertInstructions
 from pymongolite.backend.read_instructions import ReadInstructions
 from pymongolite.backend.storage_engine.update_instructions import UpdateInstructions
-
+from pymongolite.backend.storage_engine.serialization_helpers import MongoLiteJSONDecoder, MongoLiteJSONEncoder
 
 class FilesEngine(BaseEngine):
     def __init__(self, dirpath: Union[str, Path], **kwargs):
@@ -57,10 +57,10 @@ class FilesEngine(BaseEngine):
         return self._get_database_path(database_name) / collection_name
 
     def _serialize_document(self, document: dict) -> str:
-        return json.dumps(document)
+        return json.dumps(document, cls=MongoLiteJSONEncoder)
 
     def _deserialize_document(self, serialized_document: str) -> dict:
-        return json.loads(serialized_document)
+        return json.loads(serialized_document, cls=MongoLiteJSONDecoder)
 
     def _mark_document_as_deleted(self, file, index: int):
         file.seek(index)
